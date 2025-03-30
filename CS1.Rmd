@@ -1,6 +1,10 @@
 ---
 title: "Case Study 1"
 subtitle: "AKSTA Statistical Computing"
+author:
+  - Carla Salazar
+  - Veneta Grigorova
+  - Juraj Simkovic
 output: 
 #pdf_document
   pdf_document:
@@ -11,8 +15,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-*The  .Rmd and .html (alternatively the .pdf) should be uploaded in TUWEL by the deadline. Refrain from using explanatory comments in the R code chunks but write them as text instead. Points will be deducted if the submitted file is not in a decent form.*
-
 # 1. Ratio of Fibonacci numbers
 
 ## a. 
@@ -20,14 +22,73 @@ Write two different R functions which return the sequence $r_{i}=F_{i+1}/F_i$
 for $i=1,\ldots,n$ where $F_i$ is the $i$th Fibonacci number, once using `for`
 and once using `while`.
 
+Function using a for loop
+```{r}
+fib_ratio_for <- function(n) {
+  fib <- numeric(n + 1)
+  fib[1] <- 1
+  fib[2] <- 1
+  for (i in 3:(n + 1)) {
+    fib[i] <- fib[i - 1] + fib[i - 2]
+  }
+  return(fib[2:(n + 1)] / fib[1:n])
+}
+print(fib_ratio_for(10))
+```
+
+Function using a while loop
+```{r}
+fib_ratio_while <- function(n){
+  fib1 <- numeric(n + 1)
+  fib1[1] <- 1
+  fib1[2] <- 1
+  i <- 3
+  while (i <= (n+1)){
+    fib1[i] <- fib1[i - 1] + fib1[i - 2]
+    i <- i+1
+  }
+  return(fib1[2:(n + 1)] / fib1[1:n])
+}
+print(fib_ratio_while(20))
+```
+
 ## b. 
 Benchmark the two functions for $n=200$ and $n=2000$ (you can use package **microbenchmark** or package **bench** for this purpose). Which function is faster?
+
+```{r, warning = FALSE}
+library(microbenchmark)
+
+benchmark <- microbenchmark(
+  fib_ratio_for_200 = fib_ratio_for(200),
+  fib_ratio_while_200 = fib_ratio_while(200),
+  fib_ratio_for_2000 = fib_ratio_for(2000),
+  fib_ratio_while_2000 = fib_ratio_while(2000)
+)
+summary(benchmark)
+```
+
+The `for_loop` is faster because it's more efficient in R. When using a `for` loop, R automatically handles the loop index and knows how many times to repeat. This makes it run faster with less overhead.
+
+In contrast, a `while` loop checks the condition every time and needs manual updates to the counter. This adds a little extra work each time the loop runs.
+
+So, even though both loops do the same thing, `for_loop` is faster and more consistent, especially when the number of iterations is known.
 
 ## c.
 Plot the sequence for  $n=100$. 
 For which $n$ does it start to stabilize to a value?
 What number does the sequence converge to?
 
+```{r}
+ratios <- fib_ratio_for(100)
+plot(ratios, type = "l", col = "blue", main = "Fibonacci Ratio Sequence",
+     xlab = "i", ylab = expression(r[i]))
+abline(h = (1 + sqrt(5)) / 2, col = "red", lty = 2)
+```
+The ratio \( r_i \) starts to stabilize around \( i = 20 \). It converges to the golden ratio:
+
+\[
+\frac{1 + \sqrt{5}}{2} \approx 1.618
+\]
 
 # 2. Gamma function
 
@@ -38,16 +99,51 @@ $$
 \rho_n =\frac{\Gamma((n-1)/2)}{\Gamma(1/2)\Gamma((n - 2)/2)}
 $$
 
+```{r}
+rho_n <- function(n) {
+  gamma((n - 1) / 2) / (gamma(1 / 2) * gamma((n - 2) / 2))
+}
+```
+
 ## b. 
 
 Try $n = 2000$. What do you observe? Why do you think the observed behavior happens?
 
+```{r}
+rho_n(2000)
+```
+
+The result is `NaN` because of numerical overflow. The the Gamma function grows very fast, and R can't handle such large values directly.
+
 ## c.
 Write an implementation which can also deal with large values of $n>1000$. 
+
+```{r}
+rho_n_stable <- function(n) {
+  log_rho <- lgamma((n - 1) / 2) - (lgamma(1 / 2) + lgamma((n - 2) / 2))
+  exp(log_rho)
+}
+```
+
+Now it works even for large \( n \):
+
+```{r}
+rho_n_stable(2000)
+```
 
 ## d. 
 Plot $\rho_n/\sqrt{n}$ for different values of $n$. Can you guess the limit of $\rho_n/\sqrt{n}$ for $n \rightarrow\infty$?
 
+```{r}
+n_vals <- 1:200
+ratios <- sapply(n_vals, function(n) rho_n_stable(n) / sqrt(n))
+
+plot(n_vals, ratios, type = "l", col = "blue", lwd = 2,
+     main = expression(rho[n] / sqrt(n)),
+     xlab = "n", ylab = expression(rho[n] / sqrt(n)))
+```
+
+The plot shows that \( \rho_n / \sqrt{n} \) converges to a constant as \( n \to \infty \), which is consistent with asymptotic properties of the Gamma function.
 
 # 3. Weak law of large numbers
 
@@ -65,9 +161,9 @@ where $\bar X_n=\frac{X_1+X_2+\ldots+X_n}{n}$ is the sample mean (the sample mea
 - After each roll, compute the cumulative mean of all previous rolls. 
 
 ```{r}
-n <- 10000  # number of die rolls
-rolls <- sample(1:6, n, replace = TRUE)  # simulate die rolls
-running_avg <- cumsum(rolls) / (1:n)  # compute cumulative mean
+n <- 10000
+rolls <- sample(1:6, n, replace = TRUE)
+running_avg <- cumsum(rolls) / (1:n)
 ```
 
 - Plot the running average against the number of rolls and comment on the result.
@@ -76,7 +172,7 @@ running_avg <- cumsum(rolls) / (1:n)  # compute cumulative mean
 plot(running_avg, type = "l", col = "blue",
      main = "Running Average of 10,000 Dice Rolls",
      xlab = "Number of Rolls", ylab = "Running Average")
-abline(h = 3.5, col = "red", lty = 2)  # expected value line
+abline(h = 3.5, col = "red", lty = 2)
 ```
 This plot shows how the running average changes as we roll the die more times. At the start, the average jumps around a lot because each new roll has a big effect. But after a while, it starts to settle down.
 
@@ -89,10 +185,9 @@ This will result in $50$
 paths which you can plot against the number of rolls.
 
 ```{r}
-M <- 50  # number of repetitions
-paths <- matrix(NA, nrow = n, ncol = M)  # to store running averages
+M <- 50
+paths <- matrix(NA, nrow = n, ncol = M)
 
-# Generate 50 paths of running averages
 for (i in 1:M) {
   rolls <- sample(1:6, n, replace = TRUE)
   paths[, i] <- cumsum(rolls) / (1:n)
@@ -134,19 +229,16 @@ $[-\epsilon,\epsilon]$ is less than 0.05. Use $\epsilon = 0.01$.
 - How high is $n$ at  the end of the loop?
 
 ```{r}
-epsilon <- 0.01  # error margin
-max_iter <- 1e6  # upper limit to prevent infinite loop
+epsilon <- 0.01
+max_iter <- 1e6
 
-# pre-generate all rolls
 rolls_matrix <- matrix(sample(1:6, max_iter * M, replace = TRUE), nrow = max_iter, ncol = M)
 running_avg <- matrix(NA, nrow = max_iter, ncol = M)
 
-# initialize first row
 running_avg[1, ] <- rolls_matrix[1, ]
 j <- 2
 prop_in <- 0
 
-# use while loop to stop once 95% of paths are within epsilon
 while (j <= max_iter && prop_in < 0.95) {
   running_avg[j, ] <- (running_avg[j - 1, ] * (j - 1) + rolls_matrix[j, ]) / j
   prop_in <- mean(abs(running_avg[j, ] - 3.5) <= epsilon)
@@ -163,9 +255,8 @@ discrete uniform distribution, simulate from a continuous standard cauchy distri
 mean zero (standard) normally distributed random variables.
 
 ```{r}
-cauchy_paths <- matrix(NA, nrow = n, ncol = M)  # to store running means
+cauchy_paths <- matrix(NA, nrow = n, ncol = M)
 
-# generate Cauchy distributed paths
 for (i in 1:M) {
   x <- rcauchy(n)
   cauchy_paths[, i] <- cumsum(x) / (1:n)
@@ -258,12 +349,10 @@ Record the mean of the $n$ rolls.
 $n$. This will give you 100 sample means for each $n$.
 
 ```{r}
-# function to simulate sample means
 get_means <- function(n, M) {
   replicate(M, mean(sample(1:6, n, replace = TRUE)))
 }
 
-# simulate means for different sample sizes
 means_100 <- get_means(100, 100)
 means_1000 <- get_means(1000, 100)
 means_10000 <- get_means(10000, 100)
@@ -271,10 +360,8 @@ means_10000 <- get_means(10000, 100)
 
 - Plot a histogram of the 100 sample means for each value of $n$. Observe the shape of the histograms.
 ```{r, fig.width=15, fig.height=4}
-# find common x-axis limits (min and max across all data)
 x_limits <- range(c(means_100, means_1000, means_10000))
 
-# xlot histograms
 par(mfrow = c(1, 3))
 hist(means_100, main = "n = 100", xlab = "Sample Mean", col = "lightblue",
      breaks = 20, xlim = x_limits)
@@ -282,7 +369,6 @@ hist(means_1000, main = "n = 1000", xlab = "Sample Mean", col = "lightgreen",
      breaks = 20, xlim = x_limits)
 hist(means_10000, main = "n = 10000", xlab = "Sample Mean", col = "lightpink",
      breaks = 20, xlim = x_limits)
-
 ```
 
 - Discuss how the distribution of the sample means changes as $n$ increases. Comment on whether the histograms appear to approach a normal distribution as $n$, illustrating the Central Limit Theorem.
@@ -328,15 +414,13 @@ consider $Z_n$.
 $M=\{100,1000,10000\}$ replications, simulate the rolling of $n$ dice and calculate the $Z_n$.
 
 ```{r}
-# function to simulate M values of Zn for given n
 simulate_Zn <- function(n, M, mu = 3.5, sigma = sqrt(35/12)) {
   replicate(M, {
-    x <- sample(1:6, n, replace = TRUE)       # simulate n die rolls
-    (mean(x) - mu) / (sigma / sqrt(n))        # compute standardized Zn
+    x <- sample(1:6, n, replace = TRUE)
+    (mean(x) - mu) / (sigma / sqrt(n))
   })
 }
 
-# simulate Zn values for different combinations of n and M
 Z_data <- list(
   "n=100_M=100" = simulate_Zn(100, 100),
   "n=1000_M=100" = simulate_Zn(1000, 100),
@@ -350,7 +434,7 @@ Z_data <- list(
 $n$ and  $M$.
 
 ```{r, fig.width=12, fig.height=8}
-par(mfrow = c(2, 3))  # 2 rows, 3 plots
+par(mfrow = c(2, 3))
 for (name in names(Z_data)) {
   hist(Z_data[[name]], main = name, xlab = "Zn", breaks = 20, col = "skyblue")
 }
