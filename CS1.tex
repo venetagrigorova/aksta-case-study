@@ -197,11 +197,11 @@ purpose). Which function is faster?
 \end{Shaded}
 
 \begin{verbatim}
-##                   expr     min       lq      mean  median       uq     max
-## 1    fib_ratio_for_200  22.310  24.5625  27.95183  28.522  30.0135  41.110
-## 2  fib_ratio_while_200  29.814  32.3845  36.62692  37.385  40.0360  51.071
-## 3   fib_ratio_for_2000 203.678 209.6390 249.52186 258.007 280.7130 471.442
-## 4 fib_ratio_while_2000 282.639 292.1490 342.75347 355.305 378.0865 494.905
+##                   expr     min       lq      mean   median       uq     max
+## 1    fib_ratio_for_200  20.384  25.7665  27.45564  28.0675  29.0240  44.152
+## 2  fib_ratio_while_200  28.747  36.3310  38.00837  39.0390  39.9615  56.343
+## 3   fib_ratio_for_2000 203.606 243.8485 262.91301 269.4595 283.7970 397.867
+## 4 fib_ratio_while_2000 284.475 357.3915 367.01650 375.6320 392.5095 464.484
 ##   neval
 ## 1   100
 ## 2   100
@@ -486,7 +486,7 @@ value 3.5, confirming the Weak Law of Large Numbers.
 \end{Shaded}
 
 \begin{verbatim}
-## Stopped at n = 96842 with proportion in range: 0.96
+## Stopped at n = 79023 with proportion in range: 0.96
 \end{verbatim}
 
 \subsection{f.~}\label{f.}
@@ -1029,14 +1029,25 @@ the analysis of variance are not met (reponse variable normally
 distributed, variance of population equal and responses for a given
 group are independent).
 
-Pseudocode: 1. define null and and alternative hypothesis 2. state the
-level of alpha (e.g.~0.05, 0.01, etc.) 3. calculate the degrees of
-freedom 4. state the decision rule (using the degrees of freedom and
-alpha score, we get the threshold) 5. calculate test statistic H: 1. H =
-(12 / (N\emph{(N+1))) } SUM(results from step 3) - 3*(N+1) 6. compare H
-to chi-squared distribution to get p-value. 7. state results: if
-chi-squared \textgreater{} decision rule, reject null hypothesis 1.
-else: accept null hypothesis
+Pseudocode:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#1. define null and and alternative hypothesis}
+\CommentTok{\#2. check the data ensuring theres values and group labels and they’re in the right format}
+\CommentTok{\#3. state the level of alpha (e.g. 0.05, 0.01, etc.)}
+\CommentTok{\#4. calculate the degrees of freedom}
+\CommentTok{\#5. state the decision rule (using the degrees of freedom and alpha score, we get the threshold)}
+\CommentTok{\#6. combine all the data and rank them from smallest to largest. If there’s ties they get avg rank (R does it by default).}
+\CommentTok{\#7. then the group rank sums: count how many values and add up the ranks}
+\CommentTok{\#8. calculate test statistic H:}
+\CommentTok{\#   1.  H = (12 / (N*(N+1))) * SUM(results from step 4) {-}3*(N+1)}
+\CommentTok{\#9. if ties exist (same values across groups), adjust the ranking method to account for them}
+\CommentTok{\#10. use chi{-}squared distribution and the num of groups to get the p}
+\CommentTok{\#11. state results: if chi{-}square \textgreater{} decision rule, reject null hypothesis}
+\CommentTok{\#   1. else: accept null hypothesis"}
+\end{Highlighting}
+\end{Shaded}
 
 \subsection{b.}\label{b.-5}
 
@@ -1268,8 +1279,8 @@ package on the data generated above. Comment on the results.
 \begin{verbatim}
 ## Unit: milliseconds
 ##         expr      min       lq     mean   median       uq      max neval
-##  original_kw 366.1911 381.1398 406.3051 396.0885 426.3620 456.6355     3
-##      fast_kw 118.2102 135.0510 148.9937 151.8919 164.3854 176.8790     3
+##  original_kw 354.4552 354.9827 368.5241 355.5101 375.5586 395.6070     3
+##      fast_kw 121.8393 129.8944 139.3677 137.9496 148.1319 158.3142     3
 \end{verbatim}
 
 I am unsure, if I understood this part correctly, but I am comparing the
@@ -1373,10 +1384,10 @@ to the other two. Comment on the results.
 
 \begin{verbatim}
 ## Unit: milliseconds
-##        expr      min        lq      mean    median        uq       max neval
-##    original 353.3562 355.39164 364.80907 357.42706 370.53550 383.64394     3
-##        fast 135.0841 135.88183 138.36653 136.67954 140.00774 143.33594     3
-##  vectorized  16.4036  18.39977  32.47445  20.39594  40.50988  60.62381     3
+##        expr       min        lq      mean    median        uq       max neval
+##    original 359.04976 360.35990 363.00973 361.67005 364.98972 368.30940     3
+##        fast 132.19819 132.37557 134.33237 132.55296 135.39946 138.24596     3
+##  vectorized  15.35631  15.72172  29.33972  16.08713  36.33142  56.57572     3
 \end{verbatim}
 
 Clearly, the vectorized function is the fastest of the three. This could
