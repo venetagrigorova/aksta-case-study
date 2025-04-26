@@ -291,9 +291,9 @@ $$
 converges to the standard normal CDF as $n\rightarrow\infty$.
 
 ## a. 
-Derive the expected value of the sample mean $\bar X_n=\frac{X_1+X_2+\ldots+X_n}{n}$.
+Derive the expected value of the sample mean $\bar{X}_n = \frac{X_1 + X_2 + \ldots + X_n}{n}$.
 
-Let \( X_1, X_2, \ldots, X_n \) be i.i.d. random variables with expected value \( \mu = E[X_i] \).
+Let $X_1, X_2, \ldots, X_n$ be i.i.d. random variables with expected value $\mu = E[X_i]$.
 
 The sample mean is defined as:
 
@@ -301,39 +301,80 @@ The sample mean is defined as:
 \bar{X}_n = \frac{1}{n} \sum_{i=1}^n X_i
 \]
 
-To find the expected value of \( \bar{X}_n \), we use the linearity of expectation:
+To find the expected value of $\bar{X}_n$, we use the linearity of expectation, which says:
+
+\[
+E\left[ \sum X_i \right] = \sum E[X_i]
+\]
+
+Now apply it to the sample mean:
 
 \[
 E[\bar{X}_n] = E\left[ \frac{1}{n} \sum_{i=1}^n X_i \right]
+\]
+
+Pull out the constant $\frac{1}{n}$:
+
+\[
 = \frac{1}{n} \sum_{i=1}^n E[X_i]
+\]
+
+Since all the variables are identically distributed, each one has the same expected value, which we call $\mu$. So when we average $n$ of them, we’re just averaging $n$ copies of $\mu$, which gives us $\mu$ again.
+
+\[
 = \frac{1}{n} \cdot n \cdot \mu = \mu
 \]
 
 So, the expected value of the sample mean is equal to the population mean:
+
 \[
 E[\bar{X}_n] = \mu
 \]
- 
-## b. 
-Derive the variance of the sample mean $\bar X_n=\frac{X_1+X_2+\ldots+X_n}{n}$.
 
-Let \( \sigma^2 = \text{Var}(X_i) \). Since the \( X_i \) are i.i.d., the variance of the sample mean is:
+## b. 
+Derive the variance of the sample mean $\bar{X}_n = \frac{X_1 + X_2 + \ldots + X_n}{n}$.
+
+Let $X_1, X_2, \ldots, X_n$ be i.i.d. random variables with variance $\sigma^2$.
+
+The sample mean is:
+
+\[
+\bar{X}_n = \frac{1}{n} \sum_{i=1}^n X_i
+\]
+
+We want to compute the variance of $\bar{X}_n$.
+
+Use the rule:
+
+\[
+\text{Var}(aX) = a^2 \cdot \text{Var}(X)
+\]
+
+Apply it to the sample mean:
 
 \[
 \text{Var}(\bar{X}_n) = \text{Var}\left( \frac{1}{n} \sum_{i=1}^n X_i \right)
 \]
 
-We use the rule that \( \text{Var}(aX) = a^2 \cdot \text{Var}(X) \) and the independence of the \( X_i \):
+Pull out the constant:
 
 \[
-\text{Var}(\bar{X}_n) = \frac{1}{n^2} \sum_{i=1}^n \text{Var}(X_i)
-= \frac{1}{n^2} \cdot n \cdot \sigma^2 = \frac{\sigma^2}{n}
+= \frac{1}{n^2} \cdot \text{Var}\left( \sum_{i=1}^n X_i \right)
 \]
 
-So, the variance of the sample mean decreases with \( n \):
+Since the $X_i$ are independent, their variances add:
+
+\[
+= \frac{1}{n^2} \cdot \sum_{i=1}^n \text{Var}(X_i) = \frac{1}{n^2} \cdot n \cdot \sigma^2
+\]
+
+Simplify:
+
 \[
 \text{Var}(\bar{X}_n) = \frac{\sigma^2}{n}
 \]
+
+So the variance of the sample mean decreases as $n$ increases, meaning the sample mean becomes more stable with larger sample sizes.
 
 ## c. 
 The central limit theorem makes few assumption on the distribution of the random variables $X_i$.
@@ -453,31 +494,24 @@ Z_n = \frac{\bar{X}_n - \mu}{\sigma / \sqrt{n}}
 
 **Effect of \( n \):**
 
-As *n* increases:
+As n increases:
 
 - The sample mean $\bar{X}_n$ becomes more concentrated around the true mean $\mu$.
 - So $Z_n$ becomes less variable, and its distribution gets tighter and more normal-shaped.
-- You can clearly see that in the bottom row (large *n*), where the histograms are symmetric and bell-shaped.
+- You can clearly see that in the bottom row (large n), where the histograms are symmetric and bell-shaped.
 
 **Effect of \( M \):**
 
-*M* controls how many values of $Z_n$ you generate.
+M controls how many values of $Z_n$ you generate.
 
-As *M* increases:
+As M increases:
 
 - The histogram becomes smoother and more accurate, because you have more data points.
 - It doesn't change the distribution's shape but makes it easier to see the bell curve.
-- Compare the rough, jagged histograms when *M = 100* (top row) with the very smooth ones when *M = 10000* (bottom middle).
+- Compare the rough, jagged histograms when M = 100 (top row) with the very smooth ones when M = 10000 (bottom middle).
 
-From the histograms, the distribution of \( Z_n \) becomes more "normal-looking" as both the sample size \( n \) and the number of replications \( M \) increase. When \( M = 100 \), the distributions are still a bit uneven and noisy, even if \( n \) is large. This is likely because 100 repetitions aren't enough to fully capture the shape of the distribution.
-
-As \( M \) increases to 1000 and 10000, the histograms get much smoother and start to show the bell-shaped curve we expect from a standard normal distribution.
-
-Increasing \( n \) makes each \( Z_n \) more stable. With larger \( n \), the standardized means are less variable and cluster more tightly around 0.
-
-Overall, the results clearly show the **Central Limit Theorem**:  
+Overall, the results clearly show the Central Limit Theorem:  
 The distribution of the standardized sample mean \( Z_n \) approaches the standard normal distribution as \( n \) and \( M \) increase — even though the original data (rolling a fair die) comes from a discrete, non-normal distribution.
-
 
 # 5. Readable and efficient code
 
@@ -624,6 +658,7 @@ Write a pseudo code outlining what the function does.
 
 The Kruskal-Wallis test is used in case we cannot make assumptions about the distribution of the data (non-parametric) and the assumptions about the analysis of variance are not met (reponse variable normally distributed, variance of population equal and responses for a given group are independent).
 
+<<<<<<< HEAD:CaseStudy1/CS1.Rmd
 Pseudocode:
 ```{r}
 #1. define null and and alternative hypothesis
@@ -640,6 +675,41 @@ Pseudocode:
 #11. state results: if chi-square > decision rule, reject null hypothesis
 #   1. else: accept null hypothesis"
 ```
+=======
+The pseudocode is outlined below:
+
+1. Check the input:
+    - x must have at least two groups with data
+    - x and g must match in length (if not a list)
+    - Convert g to a factor for grouping
+
+2. Combine all observations and rank them from smallest to largest  
+   - Tied values get average ranks (R does that automatically)
+
+3. Calculate rank sums and group sizes  
+   - For each group, count the number of values and sum their ranks
+
+4. Compute the Kruskal-Wallis test statistic H  
+   - Use the formula:
+     \[
+     H = \frac{12}{N(N+1)} \sum_{j=1}^k \frac{R_j^2}{n_j} - 3(N+1)
+     \]
+   - Apply tie correction if needed:
+     \[
+     C = 1 - \frac{\sum (t_i^3 - t_i)}{N^3 - N}, \quad H_{\text{adj}} = \frac{H}{C}
+     \]
+
+5. Calculate the p-value  
+   - Use the chi-square distribution with df = k - 1:
+     \[
+     p = P(\chi^2_{k-1} > H_{\text{adj}})
+     \]
+
+6. Return the result  
+   - Test statistic, degrees of freedom, p-value, and method name
+
+
+>>>>>>> 8566507e3b288a571d783a7450e9a1b3d43934b4:CS1.Rmd
 
 ## b. 
 For example data, call the function in two ways: once using `x` as a list and once using `x` as a vector with a corresponding `g` argument. Ensure that the two different function calls return the same thing by aligning the inputs.
@@ -879,4 +949,8 @@ bench_results2 <- microbenchmark(
 
 bench_results2
 ```
+<<<<<<< HEAD:CaseStudy1/CS1.Rmd
 Clearly, the vectorized function is the fastest of the three. This could be for several reasons, for example the vectorized function handles all rows simultaneously, which makes it more efficient.
+=======
+Clearly, the vectorized function is the fastest of the three. This could be because it uses matrix operations instead of loops, avoids R's function call overhead, and processes all rows at once by computing ranks and group sums in bulk.
+>>>>>>> 8566507e3b288a571d783a7450e9a1b3d43934b4:CS1.Rmd
