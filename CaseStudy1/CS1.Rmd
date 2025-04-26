@@ -486,8 +486,14 @@ Read over the code below.
 ## a. 
 Explain (in text) what the code does.
 
+This function generates 100 random values from a normal distribution using the rnorm() function for variables x and z. Afterwards it checks if a threshold for the sum of the x values are met. If not, the execution is stopped. Then it goes on to fit a linear model using these variables. It also takes the sine function of the residuals and adds a bit of noise to create the next value of x. This is repeated 4 times. At the end a dataframe is created based on the x and newly created y values, which are based on x and some noise.
+
+In the second part of the function - a manual cross validation error estimation is calculated. The function is parted in 4 sections - 1:250, 251:500, 501:750, and 751:1000. On all of these 4 parts, the linear model is fit, predicted and the root mean squared error is calculated. The result is a vector of total 4 RMSE values of each of these 4 chunks.
+
 ## b.
 Explain (in text) what you would change to make the code more readable.
+
+To make the code more readable, simple coding practices could make it better. For example, adding comments to explain what part of the code is responsible for what action (or what is intended by writing such and such code). Secondly, adding meaningful variable names - instead of x,y,z, we could write predictor, response and residuals. Thirdly, a lot of the code is repetitive. Instead of writing the same code over and over, we could wrap the code in a function to make our work more efficient. Lastly, the code is just one big chunk of code - adding spaces and lines to separate different part of the code would also make it more clearer and easier to understand.
 
 ## c.
 Change the code according to b. and wrap it in a function. This function should have at most 10 lines (without adding commands to more lines such as `x <- 1; y <- 2`. Such commands will count as 2 lines!). Check that the function called on the same input outputs the same as the provided code.
@@ -551,6 +557,22 @@ r <- c(r, sqrt(mean((p4 - df[(751:1000),"y"])^2)))
 r
 ```
 
+New function:
+
+```{r}
+cross_val_rmse <- function(df, n_splits=4) {
+  test_indices <- split(1:nrow(df), cut(seq_along(1:nrow(df)), breaks=n_splits, labels=FALSE))
+  rmse <- numeric(n_splits)
+  for (i in seq_along(test_indices)) {
+    train <- df[-test_indices[[i]], ]
+    test <- df[test_indices[[i]], ]
+    model <- lm(y ~ x, data=train)
+    pred <- predict(model, test)
+    rmse[i] <- sqrt(mean((pred - test$y)^2))}
+  return(rmse)}
+```
+
+
 # 6. Measuring and improving performance
 
 Have a look at the code of the function below. It is a function for performing a Kruskal-Wallis test, a robust non-parametric method for testing whether samples come from the same distribution. (Note: we assume no missing values are present in `x`). 
@@ -600,14 +622,99 @@ kwtest <- function (x, g, ...)
 ## a. 
 Write a pseudo code outlining what the function does.
 
+The Kruskal-Wallis test is used in case we cannot make assumptions about the distribution of the data (non-parametric) and the assumptions about the analysis of variance are not met (reponse variable normally distributed, variance of population equal and responses for a given group are independent).
+
+Pseudocode:
+```{r}
+#1. define null and and alternative hypothesis
+#2. check the data ensuring theres values and group labels and they’re in the right format
+#3. state the level of alpha (e.g. 0.05, 0.01, etc.)
+#4. calculate the degrees of freedom
+#5. state the decision rule (using the degrees of freedom and alpha score, we get the threshold)
+#6. combine all the data and rank them from smallest to largest. If there’s ties they get avg rank (R does it by default).
+#7. then the group rank sums: count how many values and add up the ranks
+#8. calculate test statistic H:
+#   1.  H = (12 / (N*(N+1))) * SUM(results from step 4) -3*(N+1)
+#9. if ties exist (same values across groups), adjust the ranking method to account for them
+#10. use chi-squared distribution and the num of groups to get the p
+#11. state results: if chi-square > decision rule, reject null hypothesis
+#   1. else: accept null hypothesis"
+```
+
 ## b. 
 For example data, call the function in two ways: once using `x` as a list and once using `x` as a vector with a corresponding `g` argument. Ensure that the two different function calls return the same thing by aligning the inputs.
+
+```{r}
+#calling kwtest with a list
+list1 <- list(
+  group1 = c(3, 5, 4),
+  group2 = c(8, 9, 7),
+  group3 = c(2, 1, 6)
+)
+
+result_list <- kwtest(list1)
+result_list
+```
+
+```{r}
+#calling it with vectors
+x_vector <- c(3, 5, 4, 8, 9, 7, 2, 1, 6)
+g_vector <- factor(c(1,1,1,2,2,2,3,3,3))
+
+result_vector <- kwtest(x_vector, g_vector)
+result_vector
+```
 
 ## c. 
 Make a faster version of `kwtest()` that only computes the Kruskal-Wallis  **test statistic** when the input is a numeric variable `x` and a variable `g` which gives the group membership. You can try simplifying the function above or by coding from the mathematical definition (see https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance). This function should also perform some checks to ensure the correctness of the inputs (use `kwtest()` as inspiration).
 
+```{r}
+fast_kw <- function(x, g) {
+  if (is.list(x)) {
+    if (length(x) < 2L)
+      stop("'x' must be a list with at least 2 elements")
+    if (!missing(g))
+      warning("'x' is a list, so ignoring argument 'g'")
+    if (!all(sapply(x, is.numeric)))
+      warning("some elements of 'x' are not numeric and will be coerced to numeric")
+    
+    k <- length(x)
+    l <- lengths(x)
+    if (any(l == 0L))
+      stop("all groups must contain data")
+    
+    g <- factor(rep.int(seq_len(k), l))
+    x <- unlist(x)
+  }
+  else {
+    if (length(x) != length(g))
+      stop("'x' and 'g' must have the same length")
+    
+    g <- factor(g)
+    k <- nlevels(g)
+    if (k < 2L)
+      stop("all observations are in the same group")
+  }
+  
+  n <- length(x)
+  
+  #get ranks
+  r <- rank(x)
+  
+  #calculate group rank sums and sizes
+  rank_sums <- tapply(r, g, sum)
+  group_sizes <- tapply(r, g, length)
+  
+  #calculate H
+  H <- (12/(n*(n+1))) * sum(rank_sums^2/group_sizes) - 3*(n+1)
+  
+  return(H)
+}
+```
+
 ## d. 
 Consider the following scenario. You have samples available from multiple experiments $m=1000$ where you collect the numerical values for the quantity of interest `x` and the group membership for $n$ individuals. The first $20$ individuals in each sample belong to group 1, the following $20$ individuals in each sample belong to group 2, the last $10$ individuals in each sample belong to group 3. Use the following code to simulate such a data structure:
+
 ```{r}
 set.seed(1234)
 m <- 1000 # number of repetitions
@@ -615,16 +722,161 @@ n <- 50   # number of individuals
 X <- matrix(rt(m * n, df = 10), nrow = m)
 grp <- rep(1:3, c(20, 20, 10))
 ```
-  Write a function which performs the Kruskal-Wallis test using the function             `stats:::kruskal.test.default()` for $m$ repeated experiments and returns a vector of $m$ test statistics. The input of this function are a matrix `X` with $m$ rows and $n$ columns and a vector `g` which gives the grouping. 
 
+Write a function which performs the Kruskal-Wallis test using the function             `stats:::kruskal.test.default()` for $m$ repeated experiments and returns a vector of $m$ test statistics. The input of this function are a matrix `X` with $m$ rows and $n$ columns and a vector `g` which gives the grouping.
+
+```{r}
+kw_multiple_tests <- function(X, g) {
+  #check if input is correct
+  if (!is.matrix(X)) stop("X must be a matrix")
+  if (ncol(X) != length(g)) stop("number of columns in X must match length of g")
+  if (length(unique(g)) < 2) stop("need at least 2 groups")
+  
+  #store results in the results vector
+  results <- numeric(nrow(X))
+  
+  #loop over rows and create results
+  for (i in 1:nrow(X)) {
+    results[i] <- kruskal.test(X[i, ], g)$statistic
+  }
+  
+  return(results)
+}
+```
 
 ## e. 
 Write a function which performs the Kruskal-Wallis test using the function in point c. for $m$ repeated experiments and returns a vector of $m$ test statistics.
 The input of this function are a matrix `X` with $m$ rows and $n$ columns and a vector `g` which gives the grouping. 
 
+Basically the same thing as in 6.d), but using the original kwtest() function.
+
+```{r}
+kwtest2 <- function(X, g) {
+  #check if input is correct
+  if (!is.matrix(X))
+    stop("X must be a matrix")
+  if (ncol(X) != length(g))
+    stop("number of columns in X must match length of g")
+  if (length(unique(g)) < 2)
+    stop("need at least 2 groups")
+  
+  #store results in the results vector
+  results <- numeric(nrow(X))
+  
+  #loop over rows and create results
+  for (i in 1:nrow(X)) {
+    results[i] <- kwtest(X[i, ], g)$statistic
+  }
+  
+  return(results)
+}
+```
+
 ## f. 
 Compare the performance of the two approaches using a benchmarking package on the data generated above. Comment on the results.
+
+```{r}
+if (!require("microbenchmark")) install.packages("microbenchmark")
+library(microbenchmark)
+
+bench_results <- microbenchmark(
+  original_kw = {
+    sapply(1:nrow(X), function(i) kwtest(X[i,], grp)$statistic)
+  },
+  fast_kw = {
+    sapply(1:nrow(X), function(i) fast_kw(X[i,], grp))
+  },
+  times = 3
+)
+
+bench_results
+```
+
+I am unsure, if I understood this part correctly, but I am comparing the original KW function with the fast KW function to see if there are differences in performance. Using R’s benchmarking library, we can clearly see that the original_kw function, which was provided in the Assignment’s description is a lot slower than the fast_kw. The mean runtime of the original_kw function is ~456 ms, while the mean runtime of the fast_kw is ~ 162 ms.
 
 ## g. 
 Now consider vectorizing the function in point c. Compare this approach to the other two.
 Comment on the results.
+
+```{r}
+fast_kw_vectorized <- function(x, g) {
+  #check for matrix input
+  if (is.matrix(x)) {
+    if (missing(g)) stop("for matrix input, group vector 'g' must be provided")
+    if (ncol(x) != length(g)) stop("number of columns in x must match length of g")
+    
+    #vectorization of ranks
+    ranks <- t(apply(x, 1, rank))
+    
+    g <- as.factor(g)
+    k <- nlevels(g)
+    n <- ncol(x)
+    
+    group_sums <- matrix(0, nrow = nrow(x), ncol = k)
+    group_counts <- tabulate(g)
+    
+    for (i in seq_len(k)) {
+      group_cols <- which(g == levels(g)[i])
+      group_sums[, i] <- rowSums(ranks[, group_cols, drop = FALSE])
+    }
+    
+    H <- (12/(n*(n+1))) * rowSums(group_sums^2/group_counts) - 3*(n+1)
+    return(H)
+  }
+  
+  if (is.list(x)) {
+    if (length(x) < 2L)
+      stop("'x' must be a list with at least 2 elements")
+    if (!missing(g))
+      warning("'x' is a list, so ignoring argument 'g'")
+    if (!all(sapply(x, is.numeric)))
+      warning("some elements of 'x' are not numeric and will be coerced to numeric")
+    
+    k <- length(x)
+    l <- lengths(x)
+    if (any(l == 0L))
+      stop("all groups must contain data")
+    
+    g <- factor(rep.int(seq_len(k), l))
+    x <- unlist(x)
+  } else {
+    if (length(x) != length(g))
+      stop("'x' and 'g' must have the same length")
+    
+    g <- factor(g)
+    k <- nlevels(g)
+    if (k < 2L)
+      stop("all observations are in the same group")
+  }
+  
+  n <- length(x)
+
+  #get ranks
+  r <- rank(x)
+
+  #calculate group rank sums and sizes
+  rank_sums <- tapply(r, g, sum)
+  group_sizes <- tapply(r, g, length)
+
+  #calculate H
+  H <- (12/(n*(n+1))) * sum(rank_sums^2/group_sizes) - 3*(n+1)
+  
+  return(H)}
+```
+
+```{r}
+bench_results2 <- microbenchmark(
+  original = {
+    sapply(1:nrow(X), function(i) kwtest(X[i,], grp)$statistic)
+  },
+  fast = {
+    sapply(1:nrow(X), function(i) fast_kw(X[i,], grp))
+  },
+  vectorized = {
+    fast_kw_vectorized(X, grp)
+  },
+  times = 3)
+
+bench_results2
+```
+Clearly, the vectorized function is the fastest of the three. This could be for several reasons, for example the vectorized function handles all rows simultaneously, which makes it more efficient.
