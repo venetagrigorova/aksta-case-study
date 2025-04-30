@@ -139,7 +139,7 @@ clean_country <- function(x) {
     stri_trans_general("Latin-ASCII")  # remove accents/unicode variants
 }
 
-# clean and standardize df_all (your dataset with education, migration, unemployment)
+# clean and standardize df_all
 df_all <- df_all %>%
   mutate(country = str_trim(country)) %>%
 
