@@ -549,7 +549,7 @@ prior_probability_high_income
 
 
 ```{r}
-european_countries_high_income_prob <- european_countries[european_countries$income == "High income",]
+european_countries_high_income <- european_countries[european_countries$income == "High income",]
 ```
 
 ```{r}
@@ -603,7 +603,7 @@ Export the final tidy dataset from e. as a **CSV** with:`;` as a separator; `.` 
 ```{r}
 # Export to CSV without row names
 write.table(df_vars, 
-            file='/Users/jurajsimkovic/Documents/TU/SS25/AKSTA_StatComp/aksta-case-study/case-study-2/data/final_df.csv', 
+            file='data/final_df.csv', 
             row.names=FALSE, 
             col.names=TRUE, 
             sep=';', 
