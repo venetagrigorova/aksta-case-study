@@ -40,13 +40,13 @@ Load the following datasets from TUWEL and ensure that missing values are handle
   
 ```{r}
 library(dplyr)
+library(tidyr)
 library(readr)
 library(stringr)
 library(countrycode)
 library(readxl)
 library(readr)
 library(stringi)
-library(dplyr)
 ```
 
 ```{r}
@@ -315,14 +315,213 @@ In general, these cases show how **politics, geography, conflict, and resource a
 
 - Create a table of average (mean and median) values for expenditure, youth unemployment rate and net migration rate separated into income status. Make sure that in the output, the ordering of the income classes is proper (i.e., L, LM, UM, H or the other way around). Briefly comment the results and any differences between the mean and median. 
 
-- Look at the standard deviation and the interquartile range of the variables per income status instead of the location statistics above. Do you gain additional insights? Briefly comment the results. 
+```{r}
+df_vars
+```
 
+```{r}
+income_status_df <- df_vars[c("income","country","expenditure", "youth_unemployment", "net_migration", "continent")]
+
+income_status_df
+```
+```{r}
+income_sort_map <- c(
+  "Not classified" = 5,
+  "Low income" = 1,
+  "Lower middle income" = 2,
+  "Upper middle income" = 3,
+  "High income" = 4
+)
+```
+
+```{r}
+income_status_df$income_rank <- income_sort_map[income_status_df$income]
+```
+
+```{r}
+income_status_df <- income_status_df[order(income_status_df$income_rank),]
+```
+
+```{r}
+income_status_df
+```
+
+```{r}
+# Define the metrics and groups
+metrics <- c("expenditure", "youth_unemployment", "net_migration")
+income_levels <- unique(income_status_df$income)
+
+# Initialize a list to store summary rows
+summary_list <- list()
+
+# Loop through each income level
+for (inc in income_levels) {
+  group_data <- subset(income_status_df, income_status_df$income == inc)
+  summary_row <- list(income = inc)
+
+  # Compute average and median for each metric
+  for (metric in metrics) {
+    avg_val <- mean(group_data[[metric]], na.rm = TRUE)
+    med_val <- median(group_data[[metric]], na.rm = TRUE)
+    
+    summary_row[[paste0("average_", metric)]] <- avg_val
+    summary_row[[paste0("median_", metric)]] <- med_val
+  }
+
+  # Append the row to the list
+  summary_list[[inc]] <- as.data.frame(summary_row)
+}
+
+# Combine all summaries into a single data frame
+income_summary_df <- do.call(rbind, summary_list)
+rownames(income_summary_df) <- NULL  # Clean row names
+
+# View the result
+print(income_summary_df)
+```
+High income countries have the highest average and median expenditure, as expected.
+
+Upper middle income countries show the highest youth unemployment on average.
+
+Low income countries have the lowest expenditure and relatively high youth unemployment.
+
+- Look at the standard deviation and the interquartile range of the variables per income status instead of the location statistics above. Do you gain additional insights? Briefly comment the results.
+
+```{r}
+# Define metrics and income levels
+income_groups <- list(
+  "Low income" = subset(income_status_df, income == "Low income"),
+  "Lower middle income" = subset(income_status_df, income == "Lower middle income"),
+  "Upper middle income" = subset(income_status_df, income == "Upper middle income"),
+  "High income" = subset(income_status_df, income == "High income"),
+  "Not classified" = subset(income_status_df, income == "Not classified")
+)
+
+# Store results
+variability_summary <- data.frame()
+
+# Loop through each group and compute SD and IQR
+for (name in names(income_groups)) {
+  group <- income_groups[[name]]
+  row <- list(income = name)
+  
+  for (metric in metrics) {
+    sd_val <- sd(group[[metric]], na.rm = TRUE)
+    iqr_val <- IQR(group[[metric]], na.rm = TRUE)
+    
+    row[[paste0("sd_", metric)]] <- sd_val
+    row[[paste0("iqr_", metric)]] <- iqr_val
+  }
+  
+  variability_summary <- rbind(variability_summary, as.data.frame(row))
+}
+
+# View the results
+print(variability_summary)
+
+```
+High-income countries often show lower standard deviations and IQRs, indicating more consistent expenditure and youth unemployment rates across countries in that group. In contrast to that, upper-middle and lower-middle income countries show greater variability, which means they are less stable.
 
 - Extend the analysis of the statistics median and IQR  to **each income status and continent combination**. Play around with displaying the resulting table. Use `pivot_longer()` and/or 
 `pivot_wider()` to generate different outputs. 
 Discuss the results as well as the readability of the different tables.
  
+```{r}
+# Initialize an empty data frame to store the results
+extended_variability_summary <- data.frame()
+
+# Loop through each combination of income status and continent
+for (income_name in unique(income_status_df$income)) {
+  for (continent_name in unique(income_status_df$continent)) {
+    # Subset the data for the current income and continent
+    group <- subset(income_status_df, income == income_name & continent == continent_name)
+    
+    # Initialize the row with the income and continent
+    row <- list(income = income_name, continent = continent_name)
+    
+    # Loop through the metrics (assuming 'metrics' is already defined as the columns you want to compute stats for)
+    for (metric in metrics) {
+      # Calculate the median and IQR for the current metric
+      median_val <- median(group[[metric]], na.rm = TRUE)
+      iqr_val <- IQR(group[[metric]], na.rm = TRUE)
+      
+      # Add the computed values to the row
+      row[[paste0("median_", metric)]] <- median_val
+      row[[paste0("iqr_", metric)]] <- iqr_val
+    }
+    
+    # Append the row to the summary data frame
+    extended_variability_summary <- rbind(extended_variability_summary, as.data.frame(row))
+  }
+}
+
+extended_variability_summary
+```
+```{r}
+income_sort_map <- c(
+  "Not classified" = 5,
+  "Low income" = 1,
+  "Lower middle income" = 2,
+  "Upper middle income" = 3,
+  "High income" = 4
+)
+```
+
+```{r}
+extended_variability_summary$income_rank <- income_sort_map[extended_variability_summary$income]
+```
+
+```{r}
+extended_variability_summary <-extended_variability_summary[order(extended_variability_summary$income_rank),]
+```
+ 
+```{r}
+long_format <- pivot_longer(
+  extended_variability_summary,
+  cols = -c(income, continent, income_rank),
+  names_to = "metric_stat",
+  values_to = "value"
+)
+
+print(long_format)
+```
+```{r}
+wide_format <- pivot_wider(
+  long_format,
+  names_from = metric_stat,
+  values_from = value
+)
+
+print(wide_format)
+```
+I prefer the wide format. It's less rows and reading. Maybe, if somebody wanted a spread out version, with all the values laid out in one column, that would be useful.
+
 - Identify countries performing well in terms of both **youth unemployment** and **net migration rate** (top 25% in net migration and bottom 25% in youth unemployment within their continent).
+
+```{r}
+# Filter to include only rows where both metrics exist
+filtered_df <- income_status_df %>%
+  filter(!is.na(youth_unemployment), !is.na(net_migration))
+
+# Compute thresholds for each continent
+quantile_df <- filtered_df %>%
+  group_by(continent) %>%
+  mutate(
+    net_migration_75 = quantile(net_migration, 0.75, na.rm = TRUE),
+    youth_unemp_25 = quantile(youth_unemployment, 0.25, na.rm = TRUE)
+  )
+
+# Select countries above 75th percentile for net migration and below 25th percentile for youth unemployment
+top_performers <- quantile_df %>%
+  filter(
+    net_migration >= net_migration_75,
+    youth_unemployment <= youth_unemp_25
+  ) %>%
+  select(country, continent, youth_unemployment, net_migration)
+
+# View the result
+print(top_performers)
+```
 
 ## g. Conditional Probabilities
 
@@ -330,15 +529,83 @@ Estimate the following based on the observed frequencies in the data:
 
 - What is the (posterior or conditional) probability that a European country belongs to the high income group? What is the prior probability that a country belongs to the high income group?
 
+```{r}
+#probability that a country is european
+prob_european_country <- length(unique(european_countries$country))/length(df_vars$country) #num of european countries divided by the total number of countries in our dataset
+
+prob_european_country
+```
+
+```{r}
+#calculcating prior probability that a country belongs to the high income group
+prior_probability_high_income <- nrow(df_vars[df_vars$income == "High income",]) / length(df_vars$country)
+
+prior_probability_high_income
+```
+
+```{r}
+european_countries <- df_vars[df_vars$continent == "Europe",]
+```
+
+```{r}
+european_countries_high_income_prob <- european_countries[european_countries$income == "High income",]
+```
+
+```{r}
+#calculating the probability that the country belongs to a high income group given that the country is european
+
+posterior_prob <- (prob_european_country * (nrow(european_countries_high_income)/nrow(european_countries)) / prior_probability_high_income)
+                   
+posterior_prob
+```
+
 - Given a country has high youth unemployment (above %25), what is the probability that it also has negative net migration?
+
+```{r}
+# Countries with high youth unemployment
+high_unemp <- df_vars[df_vars$youth_unemployment > 25, ]
+
+# Number of such countries
+n_high_unemp <- nrow(high_unemp)
+
+# Among those, how many have negative net migration
+n_negative_migration_given_high_unemp <- nrow(high_unemp[high_unemp$net_migration < 0, ])
+
+# Conditional probability
+prob_negative_migration_given_high_unemp <- ((n_negative_migration_given_high_unemp * (nrow(high_unemp)/length(df_vars$country))) / n_high_unemp)
+
+# Output
+prob_negative_migration_given_high_unemp
+```
 
 
 ## h. Simpson’s Paradox Analysis
 
 Investigate whether an overall trend in youth unemployment rate in the high and low income groups reverses when analyzed at the continent level. E.g., does the youth unemployment rate appear lower in low-income countries overall, but higher when controlling for continent? Explain the results and possible reasons behind this paradox.
 
+```{r}
+aggregate_overall <- aggregate(youth_unemployment ~ income, df_vars, mean, na.rm = TRUE)
+print(aggregate_overall)
+```
+```{r}
+aggregate_by_continent <- aggregate(youth_unemployment ~ income + continent, df_vars, mean, na.rm = TRUE)
+print(aggregate_by_continent)
+```
+Initially, it seems like when the data is not aggregated according to continent high income countries have higher youth unemployement rate than low income countries. However, if we aggregate based on continent, then the story changes. The high income countries have consistently lower youth unemploymenet rate. For example, in Africa 11.60000 < 13.41875. In Asia, the difference is even larger: 11.69286 < 25.96667.
+
+The Simpson's paradox usually happens due to different sample sizes across continents (for example that in Africa and Asia, there are more low-income countries). For example, Europe does not even have the category low income. Generally, confounding variables skew the initial results and casual relationships are properly addressed as well.
 
 ## i. Data Export
 
 Export the final tidy dataset from e. as a **CSV** with:`;` as a separator; `.` representing missing values; no row names included.  Upload the `.csv` to TUWEL, together with the submission.
 
+```{r}
+# Export to CSV without row names
+write.table(df_vars, 
+            file='/Users/jurajsimkovic/Documents/TU/SS25/AKSTA_StatComp/aksta-case-study/case-study-2/data/final_df.csv', 
+            row.names=FALSE, 
+            col.names=TRUE, 
+            sep=';', 
+            na='.', 
+            quote=FALSE)
+```

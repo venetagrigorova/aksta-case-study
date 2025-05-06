@@ -1,0 +1,228 @@
+country;iso;income;expenditure;youth_unemployment;net_migration;continent;region
+Cuba;CUB;Upper middle income;12.8;6.1;-3.7;Americas;Caribbean
+Micronesia (Federated States of);FSM;Lower middle income;12.5;18.9;-20.9;Oceania;Micronesia
+Solomon Islands;SLB;Lower middle income;9.9;1.3;-1.6;Oceania;Melanesia
+Montserrat;MSR;Not classified;8.8;.;0;Americas;Caribbean
+Norway;NOR;High income;7.9;9.7;4;Europe;Northern Europe
+Denmark;DNK;High income;7.8;9.4;2.8;Europe;Northern Europe
+Iceland;ISL;High income;7.7;6.1;3.3;Europe;Northern Europe
+Sierra Leone;SLE;Low income;7.7;9.4;-1.2;Africa;Western Africa
+Belize;BLZ;Upper middle income;7.6;15.3;-1;Americas;Central America
+Sweden;SWE;High income;7.6;16.8;5.2;Europe;Northern Europe
+Bolivia;BOL;Lower middle income;7.3;6.9;-0.3;Americas;South America
+Eswatini;SWZ;Lower middle income;7.1;47.1;-6.8;Africa;Southern Africa
+Costa Rica;CRI;Upper middle income;7;20.6;0.8;Americas;Central America
+Lesotho;LSO;Lower middle income;7;34.4;-6.1;Africa;Southern Africa
+Bhutan;BTN;Lower middle income;6.9;10.7;0;Asia;Southern Asia
+Oman;OMN;High income;6.8;13.7;-0.4;Asia;Western Asia
+Timor-Leste;TLS;Lower middle income;6.8;13.2;-3.9;Asia;South-Eastern Asia
+Tunisia;TUN;Lower middle income;6.6;35;-1.4;Africa;Northern Africa
+South Africa;ZAF;Upper middle income;6.5;53.4;-0.2;Africa;Southern Africa
+Belgium;BEL;High income;6.4;15.8;4.8;Europe;Western Europe
+Finland;FIN;High income;6.4;17;2.6;Europe;Northern Europe
+Brazil;BRA;Upper middle income;6.3;28.5;-0.1;Americas;South America
+New Zealand;NZL;High income;6.3;11.5;8;Oceania;Australia and New Zealand
+Honduras;HND;Lower middle income;6.1;10.7;-1.4;Americas;Central America
+Israel;ISR;High income;6.1;7.2;2.1;Asia;Western Asia
+Puerto Rico;PRI;High income;6.1;26.6;-14.1;Americas;Caribbean
+Kyrgyzstan;KGZ;Lower middle income;6;14.2;-5;Asia;Central Asia
+Zimbabwe;ZWE;Lower middle income;5.9;16.5;-5;Africa;Eastern Africa
+Cyprus;CYP;High income;5.8;20.2;7.6;Asia;Western Asia
+St. Vincent & Grenadines;VCT;Upper middle income;5.7;.;-7.2;Americas;Caribbean
+Dominica;DMA;Upper middle income;5.6;.;-5.3;Americas;Caribbean
+Argentina;ARG;Upper middle income;5.5;23.7;-0.1;Americas;South America
+Aruba;ABW;High income;5.5;.;8.4;Americas;Caribbean
+France;FRA;High income;5.5;20.8;1.1;Europe;Western Europe
+Guyana;GUY;High income;5.5;21.5;0;Americas;South America
+Mozambique;MOZ;Low income;5.5;7.4;-1.7;Africa;Eastern Africa
+Austria;AUT;High income;5.4;9.4;3.6;Europe;Western Europe
+Burkina Faso;BFA;Low income;5.4;8.7;-0.6;Africa;Western Africa
+Chile;CHL;High income;5.4;18.1;0.3;Americas;South America
+Moldova;MDA;Upper middle income;5.4;7.4;-9;Europe;Eastern Europe
+Togo;TGO;Low income;5.4;3.9;0;Africa;Western Africa
+Ukraine;UKR;Upper middle income;5.4;17.9;2.3;Europe;Eastern Europe
+United Kingdom;GBR;High income;5.4;11.3;2.5;Europe;Northern Europe
+Canada;CAN;High income;5.3;11.1;5.6;Americas;Northern America
+Palestinian Territories;PSE;Lower middle income;5.3;42.2;-4.7;Asia;Western Asia
+Kenya;KEN;Lower middle income;5.3;7.4;-0.2;Africa;Eastern Africa
+Uzbekistan;UZB;Lower middle income;5.3;.;-1.9;Asia;Central Asia
+Palestinian Territories;PSE;Lower middle income;5.3;42.2;-4.2;Asia;Western Asia
+Cape Verde;CPV;Lower middle income;5.2;27.8;-0.6;Africa;Western Africa
+Jamaica;JAM;Upper middle income;5.2;24.2;-9.4;Americas;Caribbean
+Netherlands;NLD;High income;5.2;7.2;1.9;Europe;Western Europe
+Tajikistan;TJK;Lower middle income;5.2;.;-1.1;Asia;Central Asia
+Australia;AUS;High income;5.1;11.8;8.1;Oceania;Australia and New Zealand
+Burundi;BDI;Low income;5.1;2.9;-0.8;Africa;Eastern Africa
+Nepal;NPL;Lower middle income;5.1;21.4;-3.1;Asia;Southern Asia
+São Tomé & Príncipe;STP;Lower middle income;5.1;20.8;-7.9;Africa;Middle Africa
+Switzerland;CHE;High income;5.1;7.9;4.6;Europe;Western Europe
+Ecuador;ECU;Upper middle income;5;7.9;0;Americas;South America
+Estonia;EST;High income;5;11.8;-3.1;Europe;Northern Europe
+Portugal;PRT;High income;5;20.3;0.3;Europe;Southern Europe
+United States;USA;High income;5;8.6;3;Americas;Northern America
+Uruguay;URY;High income;5;25.9;-0.9;Americas;South America
+Curaçao;CUW;High income;4.9;29.3;-1.3;Americas;Caribbean
+Germany;DEU;High income;4.9;6.2;1.5;Europe;Western Europe
+Belarus;BLR;Upper middle income;4.8;10.6;0.7;Europe;Eastern Europe
+Malta;MLT;High income;4.8;9.1;6.6;Europe;Southern Europe
+Senegal;SEN;Lower middle income;4.8;8.1;-1.3;Africa;Western Africa
+Slovenia;SVN;High income;4.8;8.8;1.5;Europe;Southern Europe
+Cook Islands;COK;Not classified;4.7;.;-29.9;Oceania;Polynesia
+Ethiopia;ETH;Low income;4.7;25.2;-0.2;Africa;Eastern Africa
+Hungary;HUN;High income;4.7;10.2;1.3;Europe;Eastern Europe
+Malawi;MWI;Low income;4.7;40.5;0;Africa;Eastern Africa
+Mauritius;MUS;Upper middle income;4.7;23.9;0;Africa;Eastern Africa
+Russia;RUS;High income;4.7;17;1.7;Europe;Eastern Europe
+Poland;POL;High income;4.6;11.7;-0.3;Europe;Eastern Europe
+Zambia;ZMB;Lower middle income;4.6;24;0;Africa;Eastern Africa
+Colombia;COL;Upper middle income;4.5;18.5;-0.6;Americas;South America
+Mexico;MEX;Upper middle income;4.5;6.9;-1.9;Americas;Central America
+Vanuatu;VUT;Lower middle income;4.5;.;-1.3;Oceania;Melanesia
+Barbados;BRB;High income;4.4;29.6;-0.3;Americas;Caribbean
+Brunei;BRN;High income;4.4;28.9;2.3;Asia;South-Eastern Asia
+Latvia;LVA;High income;4.4;12.2;-5.9;Europe;Northern Europe
+Nicaragua;NIC;Lower middle income;4.4;8.5;-2.4;Americas;Central America
+Seychelles;SYC;High income;4.4;11.6;1;Africa;Eastern Africa
+South Korea;KOR;High income;4.3;10.2;2.3;Asia;Eastern Asia
+Turkey;TUR;Upper middle income;4.3;20.2;-4.3;Asia;Western Asia
+Malaysia;MYS;Upper middle income;4.2;10.5;-0.3;Asia;South-Eastern Asia
+Samoa;WSM;Lower middle income;4.2;31.9;-8.1;Oceania;Polynesia
+Spain;ESP;High income;4.2;34.3;7;Europe;Southern Europe
+Vietnam;VNM;Lower middle income;4.2;6.9;-0.3;Asia;South-Eastern Asia
+Afghanistan;AFG;Low income;4.1;17.6;-0.1;Asia;Southern Asia
+Bulgaria;BGR;High income;4.1;12.7;-0.3;Europe;Eastern Europe
+Maldives;MDV;Upper middle income;4.1;15.9;-12.7;Asia;Southern Asia
+Mongolia;MNG;Upper middle income;4.1;16.8;-0.8;Asia;Eastern Asia
+Thailand;THA;Upper middle income;4.1;3.7;0;Asia;South-Eastern Asia
+Ghana;GHA;Lower middle income;4;9.1;-1.6;Africa;Western Africa
+Iran;IRN;Upper middle income;4;27.6;-0.3;Asia;Southern Asia
+Italy;ITA;High income;4;32.2;3.2;Europe;Southern Europe
+Croatia;HRV;High income;3.9;23.7;-1;Europe;Southern Europe
+Czechia;CZE;High income;3.9;6.7;2.3;Europe;Eastern Europe
+Fiji;FJI;Upper middle income;3.9;15.4;-6.2;Oceania;Melanesia
+Slovakia;SVK;High income;3.9;14.9;0.2;Europe;Eastern Europe
+Hong Kong SAR China;HKG;High income;3.8;8.7;1.7;Asia;Eastern Asia
+India;IND;Lower middle income;3.8;22.5;0;Asia;Southern Asia
+Lithuania;LTU;High income;3.8;11.1;-5.9;Europe;Northern Europe
+Mali;MLI;Low income;3.8;16.9;-3.9;Africa;Western Africa
+Peru;PER;Upper middle income;3.8;14.7;-1.8;Americas;South America
+Albania;ALB;Upper middle income;3.6;31.9;-3.3;Europe;Southern Europe
+Djibouti;DJI;Lower middle income;3.6;.;5.1;Africa;Eastern Africa
+El Salvador;SLV;Upper middle income;3.6;9.6;-4.8;Americas;Central America
+Indonesia;IDN;Upper middle income;3.6;16.5;-1.1;Asia;South-Eastern Asia
+Luxembourg;LUX;High income;3.6;14.2;13.3;Europe;Western Europe
+San Marino;SMR;High income;3.6;27.4;6.6;Europe;Southern Europe
+Serbia;SRB;Upper middle income;3.6;29.7;0;Europe;Southern Europe
+Congo - Brazzaville;COG;Lower middle income;3.5;.;-0.9;Africa;Middle Africa
+Georgia;GEO;Upper middle income;3.5;29.9;0.1;Asia;Western Asia
+Ireland;IRL;High income;3.5;13.8;3.9;Europe;Northern Europe
+Niger;NER;Low income;3.5;0.7;-0.7;Africa;Western Africa
+Angola;AGO;Lower middle income;3.4;39.4;-0.2;Africa;Middle Africa
+Paraguay;PRY;Upper middle income;3.4;14.5;-0.1;Americas;South America
+Tanzania;TZA;Lower middle income;3.4;3.9;-0.4;Africa;Eastern Africa
+Côte d’Ivoire;CIV;Lower middle income;3.3;5.5;1.2;Africa;Western Africa
+St. Lucia;LCA;Upper middle income;3.3;46.2;-1.7;Americas;Caribbean
+Andorra;AND;High income;3.2;.;0;Europe;Southern Europe
+Grenada;GRD;Upper middle income;3.2;.;-2.6;Americas;Caribbean
+Guatemala;GTM;Upper middle income;3.2;5;-1.7;Americas;Central America
+Japan;JPN;High income;3.2;3.6;0;Asia;Eastern Asia
+Panama;PAN;High income;3.2;10.2;-0.1;Americas;Central America
+Cameroon;CMR;Lower middle income;3.1;6.3;-0.3;Africa;Middle Africa
+Jordan;JOR;Lower middle income;3.1;35.6;-11.3;Asia;Western Asia
+Namibia;NAM;Upper middle income;3.1;38;0;Africa;Southern Africa
+Romania;ROU;High income;3.1;16.2;-0.2;Europe;Eastern Europe
+Rwanda;RWA;Low income;3.1;20.6;-3.3;Africa;Eastern Africa
+Turkmenistan;TKM;Upper middle income;3.1;.;-1.7;Asia;Central Asia
+Benin;BEN;Lower middle income;2.9;5.6;0.3;Africa;Western Africa
+Laos;LAO;Lower middle income;2.9;18.2;-1;Asia;South-Eastern Asia
+Pakistan;PAK;Lower middle income;2.9;7.8;-0.9;Asia;Southern Asia
+Singapore;SGP;High income;2.9;9.1;11.8;Asia;South-Eastern Asia
+Turks & Caicos Islands;TCA;High income;2.9;.;8.9;Americas;Caribbean
+Haiti;HTI;Lower middle income;2.8;.;-1.9;Americas;Caribbean
+Madagascar;MDG;Low income;2.8;1;0;Africa;Eastern Africa
+Armenia;ARM;Upper middle income;2.7;36.3;-5.5;Asia;Western Asia
+Gabon;GAB;Upper middle income;2.7;35.7;3.9;Africa;Middle Africa
+Macao SAR China;MAC;High income;2.7;5.3;3.3;Asia;Eastern Asia
+Qatar;QAT;High income;2.7;0.4;6.5;Asia;Western Asia
+Kazakhstan;KAZ;Upper middle income;2.6;3.8;0.4;Asia;Central Asia
+Liberia;LBR;Low income;2.6;2.3;-2.9;Africa;Western Africa
+Liechtenstein;LIE;High income;2.6;.;4.9;Europe;Western Europe
+St. Kitts & Nevis;KNA;High income;2.6;.;1.2;Americas;Caribbean
+Azerbaijan;AZE;Upper middle income;2.5;13.4;0;Asia;Western Asia
+British Virgin Islands;VGB;High income;2.5;.;15.5;Americas;Caribbean
+Chad;TCD;Low income;2.5;.;-0.1;Africa;Middle Africa
+Comoros;COM;Lower middle income;2.5;19.5;-2.3;Africa;Eastern Africa
+Lebanon;LBN;Lower middle income;2.5;.;-88.7;Asia;Western Asia
+Gambia;GMB;Low income;2.4;13.1;-1.6;Africa;Western Africa
+Bahrain;BHR;High income;2.3;5.3;10.6;Asia;Western Asia
+Guinea;GIN;Lower middle income;2.3;1;0;Africa;Western Africa
+Cambodia;KHM;Lower middle income;2.2;1.1;-0.3;Asia;South-Eastern Asia
+Guinea-Bissau;GNB;Low income;2.1;.;-3.8;Africa;Western Africa
+Sri Lanka;LKA;Lower middle income;2.1;21;-1.3;Asia;Southern Asia
+Uganda;UGA;Low income;2.1;14.8;-3.5;Africa;Eastern Africa
+Myanmar (Burma);MMR;Lower middle income;1.9;2;-1.4;Asia;South-Eastern Asia
+Mauritania;MRT;Lower middle income;1.9;15.2;-0.8;Africa;Western Africa
+Papua New Guinea;PNG;Lower middle income;1.9;3.6;0;Oceania;Melanesia
+Bermuda;BMU;High income;1.5;29.3;1.6;Americas;Northern America
+Congo - Kinshasa;COD;Low income;1.5;8.7;-0.9;Africa;Middle Africa
+Monaco;MCO;High income;1.5;26.6;8.3;Europe;Western Europe
+South Sudan;SSD;Low income;1.5;38.6;0.2;Africa;Eastern Africa
+Bangladesh;BGD;Lower middle income;1.3;12.8;-3;Asia;Southern Asia
+Central African Republic;CAF;Low income;1.2;.;0;Africa;Middle Africa
+French Polynesia;PYF;High income;.;56.7;-0.7;Oceania;Polynesia
+Kosovo;XKX;Upper middle income;.;55.4;-1.8;Europe;Southern Europe
+Libya;LBY;Upper middle income;.;48.7;-0.7;Africa;Northern Africa
+North Macedonia;MKD;Upper middle income;.;45.4;0.4;Europe;Southern Europe
+Greece;GRC;High income;.;39.9;0.9;Europe;Southern Europe
+Algeria;DZA;Upper middle income;.;39.3;-0.9;Africa;Northern Africa
+New Caledonia;NCL;High income;.;38.4;3.8;Oceania;Melanesia
+Botswana;BWA;Upper middle income;.;36;2.9;Africa;Southern Africa
+Syria;SYR;Low income;.;35.8;27.1;Asia;Western Asia
+Bosnia & Herzegovina;BIH;Upper middle income;.;33.8;-0.4;Europe;Southern Europe
+Egypt;EGY;Lower middle income;.;29.6;-0.3;Africa;Northern Africa
+Guam;GUM;High income;.;29.4;-11;Oceania;Micronesia
+Montenegro;MNE;Upper middle income;.;29.4;-4.9;Europe;Southern Europe
+Saudi Arabia;SAU;High income;.;28.8;4.7;Asia;Western Asia
+Nauru;NRU;High income;.;26.6;-11.3;Oceania;Micronesia
+Bahamas;BHS;High income;.;25.8;0;Americas;Caribbean
+Iraq;IRQ;Upper middle income;.;25.6;-0.5;Asia;Western Asia
+Yemen;YEM;Low income;.;24.5;-0.2;Asia;Western Asia
+Morocco;MAR;Lower middle income;.;22.2;-1.9;Africa;Northern Africa
+Tuvalu;TUV;Upper middle income;.;20.6;-6.5;Oceania;Polynesia
+Kiribati;KIR;Lower middle income;.;17.1;-2.8;Oceania;Micronesia
+Kuwait;KWT;High income;.;15.4;-3.3;Asia;Western Asia
+Venezuela;VEN;Not classified;.;14.6;-3.4;Americas;South America
+Cayman Islands;CYM;High income;.;13.8;13;Americas;Caribbean
+Nigeria;NGA;Lower middle income;.;13.8;-0.2;Africa;Western Africa
+Dominican Republic;DOM;Upper middle income;.;13.5;-2.7;Americas;Caribbean
+Suriname;SUR;Upper middle income;.;13.4;0.5;Americas;South America
+Marshall Islands;MHL;Upper middle income;.;11;-4.5;Oceania;Micronesia
+Isle of Man;IMN;High income;.;10.1;5.2;Europe;Northern Europe
+Trinidad & Tobago;TTO;High income;.;8.7;-5.4;Americas;Caribbean
+United Arab Emirates;ARE;High income;.;6.9;7.6;Asia;Western Asia
+Philippines;PHL;Lower middle income;.;6.7;-1.8;Asia;South-Eastern Asia
+Palau;PLW;High income;.;5.6;0.9;Oceania;Micronesia
+Anguilla;AIA;Not classified;.;.;11.1;Americas;Caribbean
+Sint Maarten;SXM;High income;.;.;6;Americas;Caribbean
+Jersey;JEY;Not classified;.;.;2.3;Europe;Northern Europe
+Antigua & Barbuda;ATG;High income;.;.;2.1;Americas;Caribbean
+Guernsey;GGY;Not classified;.;.;1.9;Europe;Northern Europe
+Taiwan;TWN;High income;.;.;0.8;Asia;Eastern Asia
+Equatorial Guinea;GNQ;Upper middle income;.;.;0;Africa;Middle Africa
+Faroe Islands;FRO;High income;.;.;0;Europe;Northern Europe
+North Korea;PRK;Low income;.;.;0;Asia;Eastern Asia
+St. Helena;SHN;Not classified;.;.;0;Africa;Western Africa
+China;CHN;Upper middle income;.;.;-0.4;Asia;Eastern Asia
+Sudan;SDN;Low income;.;.;-0.4;Africa;Northern Africa
+St. Barthélemy;BLM;Not classified;.;.;-3;Americas;Caribbean
+Gibraltar;GIB;High income;.;.;-3.3;Europe;Southern Europe
+Somalia;SOM;Low income;.;.;-3.8;Africa;Eastern Africa
+Wallis & Futuna;WLF;Not classified;.;.;-4.3;Oceania;Polynesia
+Greenland;GRL;High income;.;.;-6;Americas;Northern America
+Saint Martin (French part);MAF;High income;.;.;-6;Americas;Caribbean
+British Virgin Islands;VGB;High income;.;.;-7.5;Americas;Caribbean
+St. Pierre & Miquelon;SPM;Not classified;.;.;-7.7;Americas;Northern America
+Eritrea;ERI;Low income;.;.;-11.6;Africa;Eastern Africa
+Northern Mariana Islands;MNP;High income;.;.;-15.4;Oceania;Micronesia
+Tonga;TON;Upper middle income;.;.;-17.9;Oceania;Polynesia
+American Samoa;ASM;High income;.;.;-26.1;Oceania;Polynesia
