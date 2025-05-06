@@ -530,6 +530,10 @@ Estimate the following based on the observed frequencies in the data:
 - What is the (posterior or conditional) probability that a European country belongs to the high income group? What is the prior probability that a country belongs to the high income group?
 
 ```{r}
+european_countries <- df_vars[df_vars$continent == "Europe",]
+```
+
+```{r}
 #probability that a country is european
 prob_european_country <- length(unique(european_countries$country))/length(df_vars$country) #num of european countries divided by the total number of countries in our dataset
 
@@ -543,9 +547,6 @@ prior_probability_high_income <- nrow(df_vars[df_vars$income == "High income",])
 prior_probability_high_income
 ```
 
-```{r}
-european_countries <- df_vars[df_vars$continent == "Europe",]
-```
 
 ```{r}
 european_countries_high_income_prob <- european_countries[european_countries$income == "High income",]
