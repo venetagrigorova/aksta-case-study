@@ -1,0 +1,318 @@
+---
+title: "Case Study 2"
+subtitle: "AKSTA Statistical Computing"
+author:
+  - Carla Salazar
+  - Veneta Grigorova
+  - Juraj Simkovic
+date: "2025-26-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+*The  .Rmd* **and** *.html (or .pdf) should be uploaded in TUWEL by the deadline. Refrain from using explanatory comments in the R code chunks but write them as text instead. Points will be deducted if the submitted file is not in a decent form.*
+
+**DISCLAIMER**: In case students did not contribute equally, include a disclaimer stating what each student's contribution was.
+
+
+The CIA World Factbook provides intelligence on various aspects of 266 world entities, including history, people, government, economy, energy, geography, environment, communications, transportation, military, terrorism, and transnational issues. This case study involves analyzing world data from 2020, focusing on:
+
+- **Education Expenditure (% of GDP)**
+- **Youth Unemployment Rate (15-24 years)**
+- **Net Migration Rate** (difference between the number of people entering and leaving a country per 1,000 persons)
+
+The data was sourced from the [CIA World Factbook Archives](https://www.cia.gov/the-world-factbook/about/archives/). You are required to use `dplyr` for data manipulation, while any package can be used for importing data.
+
+# Tasks:
+
+## a. Data Import and Cleaning
+
+Load the following datasets from TUWEL and ensure that missing values are handled correctly and column names are clear. Each dataset should ultimately contain only two columns: **country** and the respective variable. Note that some data sets also contain information on the year when the value was last updated.
+
+  
+  * `rawdata_369.txt` which contains the (estimated)  public expenditure on education as a percent of GDP. *Pay attention! The delimiter is 2 or more white spaces (one space would not work as it would separate country names which contain a space); you have to skip the first two lines*. 
+  
+  * `rawdata_373.csv` which contains the (estimated) youth unemployment rate (15-24) per country
+  
+  * `rawdata_347.txt`  which contains (estimated) net migration rate per country.
+  
+```{r}
+library(dplyr)
+library(readr)
+library(stringr)
+```
+
+```{r}
+# education expenditure
+edu_raw <- readLines("data/rawdata_369.txt")[-(1:2)]  # skip first 2 lines
+edu_df <- read.table(text = edu_raw, sep = "", fill = TRUE, strip.white = TRUE, 
+                     stringsAsFactors = FALSE, header = FALSE)
+
+head(edu_df)
+
+# parse education data
+edu_parsed <- str_match(edu_raw, "^(\\d+)\\s+(.+?)\\s+(\\d+\\.\\d+)\\s+(\\d{4})$")
+
+# convert to clean data frame
+edu_df_clean <- data.frame(
+  country = edu_parsed[, 3],
+  expenditure = as.numeric(edu_parsed[, 4]),
+  stringsAsFactors = FALSE
+)
+
+edu_df_clean
+```
+
+```{r}
+# net migration rate
+mig_raw <- readLines("data/rawdata_347.txt")[-(1:2)]
+
+# use regex to extract rank, country, migration rate, and year
+mig_parsed <- str_match(mig_raw, "^(\\d+)\\s+(.+?)\\s+(-?\\d+\\.\\d+)\\s+(\\d{4})")
+
+# build clean df
+mig_df_clean <- data.frame(
+  country = mig_parsed[, 3],
+  net_migration = as.numeric(mig_parsed[, 4]),
+  stringsAsFactors = FALSE
+)
+
+mig_df_clean
+```
+
+```{r}
+# rename columns for consistency
+unemp_df_clean <- read_csv("data/rawdata_373.csv") %>%
+  select(country = country_name,
+         youth_unemployment = youth_unempl_rate)
+
+unemp_df_clean
+```
+
+## b. Merging Raw Data
+
+Merge the datasets using `dplyr` on a unique key and retain the union of all observations.
+
+```{r}
+library(dplyr)
+
+# full join education and unemployment
+df_merge1 <- full_join(edu_df_clean, unemp_df_clean, by = "country")
+
+# join net migration
+df_all <- full_join(df_merge1, mig_df_clean, by = "country")
+
+dim(df_all) # dimensions
+head(df_all)
+```
+
+- What key are you using for merging?
+
+Key used for merging: country (it is common in all 3 datasets)
+
+- Return the dimensions of the merged dataset.
+
+Dimensions of merged dataset: 227 rows × 4 columns
+
+## c. Enriching Data with Income Classification
+
+Obtain country income classification (low, lower-middle, upper-middle, high) from the [World Bank](https://datahelpdesk.worldbank.org/knowledgebase/articles/906519) and merge it with the dataset.
+
+```{r}
+library(readxl)
+library(stringi)
+library(dplyr)
+
+# load World Bank income classification
+income_df <- read_excel("data/CLASS.xlsx", sheet = 1) %>%
+  select(country = Economy,
+         iso_code = Code,
+         income = `Income group`)
+
+# define a robust cleaning function for country names
+clean_country <- function(x) {
+  x %>%
+    str_trim() %>%
+    str_squish() %>%
+    stri_trans_general("Latin-ASCII")  # remove accents/unicode variants
+}
+
+# clean and standardize df_all
+df_all <- df_all %>%
+  mutate(country = str_trim(country)) %>%
+
+  # rename to match World Bank format
+  mutate(country = case_when(
+    country == "Venezuela" ~ "Venezuela, RB",
+    TRUE ~ country
+  )) %>%
+
+  # create cleaned country column for joining
+  mutate(country_clean = clean_country(country)) %>%
+
+  # remove any accidental duplicates on join key
+  distinct(country_clean, .keep_all = TRUE)
+
+# clean income_df for joining
+income_df <- income_df %>%
+  mutate(country = str_trim(country)) %>%
+  mutate(country_clean = clean_country(country))
+
+# perform the join on cleaned country names
+df_all_income <- left_join(df_all, income_df, by = "country_clean")
+
+# check
+df_all_income %>%
+  filter(is.na(income)) %>%
+  pull(country.x) %>%
+  unique()
+
+# what is in df_all
+df_all %>%
+  filter(str_detect(country, "Venezuela")) %>%
+  select(country, country_clean)
+
+# what is in World Bank
+income_df %>%
+  filter(str_detect(country, "Venezuela")) %>%
+  select(country, country_clean)
+
+# byte-by-byte comparison
+charToRaw(df_all$country_clean[grepl("Venezuela", df_all$country)])
+charToRaw(income_df$country_clean[grepl("Venezuela", income_df$country)])
+
+df_all_income
+```
+
+- Identify common variables between datasets. Can they be used for merging? Why or why not?
+
+The datasets all have country names in common, but the problem is that these names aren't always written the same way. For example, one file might say "Venezuela" while another says "Venezuela, RB", or "Korea, South" vs "Korea, Rep." Because of these differences in spelling and formatting, we can’t reliably merge the datasets just using country names unless we clean them up first
+
+- Since ISO codes are standardized, download and use the [CIA country data codes](https://www.cia.gov/the-world-factbook/references/country-data-codes/) for merging. Make sure you are not losing any of the countries in your original data set when merging.
+
+```{r}
+library(readxl)
+library(readr)
+library(stringi)
+library(dplyr)
+
+# load World Bank income classification
+income_df <- read_excel("data/CLASS.xlsx", sheet = 1) %>%
+  select(country = Economy,
+         iso_code = Code,
+         income = `Income group`)
+
+# define robust cleaning function
+clean_country <- function(x) {
+  x %>%
+    str_trim() %>%
+    str_squish() %>%
+    stri_trans_general("Latin-ASCII")  # removes accents/unicode
+}
+
+# clean and standardize df_all
+df_all <- df_all %>%
+  mutate(country = str_trim(country)) %>%
+
+  # rename to match both World Bank and CIA naming
+  mutate(country = case_when(
+    country == "Venezuela" ~ "Venezuela, RB",       # for World Bank
+    country == "Venezuela, RB" ~ "Venezuela",       # for CIA ISO
+    country == "Turkey" ~ "Türkiye",                # for CIA ISO
+    country == "Macedonia" ~ "North Macedonia",     # for CIA ISO
+    TRUE ~ country
+  )) %>%
+
+  # clean for matching
+  mutate(country_clean = clean_country(country)) %>%
+
+  # remove accidental duplicates
+  distinct(country_clean, .keep_all = TRUE)
+
+# clean income_df
+income_df <- income_df %>%
+  mutate(country = str_trim(country)) %>%
+  mutate(country_clean = clean_country(country))
+
+# merge income group
+df_all_income <- left_join(df_all, income_df, by = "country_clean")
+
+# load CIA ISO codes
+cia_codes <- read_csv("data/Country Data Codes.csv") %>%
+  select(country = Name, iso_code = `ISO 3166`) %>%
+  mutate(country = clean_country(country))
+
+# merge ISO codes using cleaned country names
+df_all_iso <- df_all_income %>%
+  mutate(country_join = clean_country(country.x)) %>%
+  left_join(cia_codes, by = c("country_join" = "country")) %>%
+  rename(iso_code = iso_code.y)
+
+# check unmatched ISO codes — should return character(0)
+df_all_iso %>%
+  filter(is.na(iso_code)) %>%
+  pull(country.x) %>%
+  unique()
+```
+
+
+##d.  Adding Geographical Information
+
+# Cargar información de continentes con countrycode
+library(countrycode)
+
+# Agregar continente y región al dataset
+df_vars <- df_all_iso %>%
+  mutate(
+    continent = countrycode(sourcevar = iso_code, origin = "iso3c", destination = "continent"),
+    region = countrycode(sourcevar = iso_code, origin = "iso3c", destination = "region")
+  )
+
+# Verificar que no se perdieron países
+missing_continent <- df_vars %>%
+  filter(is.na(continent)) %>%
+  pull(country.x) %>%
+  unique()
+
+missing_continent
+
+
+
+
+## e. Data Tidiness and Summary Statistics
+
+# Verificamos si la estructura es tidy: una fila por país, una columna por variable
+str(df_vars)
+
+# Frecuencia absoluta de income_status
+table(df_vars$income)
+
+# Frecuencia relativa
+prop.table(table(df_vars$income))
+
+# Países únicos por grupo de ingreso en su continente
+df_vars %>%
+  group_by(continent, income) %>%
+  filter(n() == 1) %>%
+  ungroup() %>%
+  select(country.x, continent, income)
+
+
+
+
+## f. Further Summary Statistics and Insights
+
+df_vars %>%
+  mutate(income = factor(income, levels = c("Low income", "Lower middle income", "Upper middle income", "High income"))) %>%
+  group_by(income) %>%
+  summarise(
+    mean_edu = mean(expenditure, na.rm = TRUE),
+    median_edu = median(expenditure, na.rm = TRUE),
+    mean_unemp = mean(youth_unemployment, na.rm = TRUE),
+    median_unemp = median(youth_unemployment, na.rm = TRUE),
+    mean_migration = mean(net_migration, na.rm = TRUE),
+    median_migration = median(net_migration, na.rm = TRUE)
+  )
+
