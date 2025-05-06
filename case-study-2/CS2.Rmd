@@ -42,6 +42,11 @@ Load the following datasets from TUWEL and ensure that missing values are handle
 library(dplyr)
 library(readr)
 library(stringr)
+library(countrycode)
+library(readxl)
+library(readr)
+library(stringi)
+library(dplyr)
 ```
 
 ```{r}
@@ -104,7 +109,7 @@ df_merge1 <- full_join(edu_df_clean, unemp_df_clean, by = "country")
 # join net migration
 df_all <- full_join(df_merge1, mig_df_clean, by = "country")
 
-dim(df_all) # dimensions
+dim(df_all)
 head(df_all)
 ```
 
@@ -120,72 +125,6 @@ Dimensions of merged dataset: 227 rows × 4 columns
 
 Obtain country income classification (low, lower-middle, upper-middle, high) from the [World Bank](https://datahelpdesk.worldbank.org/knowledgebase/articles/906519) and merge it with the dataset.
 
-```{r}
-library(readxl)
-library(stringi)
-library(dplyr)
-
-# load World Bank income classification
-income_df <- read_excel("data/CLASS.xlsx", sheet = 1) %>%
-  select(country = Economy,
-         iso_code = Code,
-         income = `Income group`)
-
-# define a robust cleaning function for country names
-clean_country <- function(x) {
-  x %>%
-    str_trim() %>%
-    str_squish() %>%
-    stri_trans_general("Latin-ASCII")  # remove accents/unicode variants
-}
-
-# clean and standardize df_all
-df_all <- df_all %>%
-  mutate(country = str_trim(country)) %>%
-
-  # rename to match World Bank format
-  mutate(country = case_when(
-    country == "Venezuela" ~ "Venezuela, RB",
-    TRUE ~ country
-  )) %>%
-
-  # create cleaned country column for joining
-  mutate(country_clean = clean_country(country)) %>%
-
-  # remove any accidental duplicates on join key
-  distinct(country_clean, .keep_all = TRUE)
-
-# clean income_df for joining
-income_df <- income_df %>%
-  mutate(country = str_trim(country)) %>%
-  mutate(country_clean = clean_country(country))
-
-# perform the join on cleaned country names
-df_all_income <- left_join(df_all, income_df, by = "country_clean")
-
-# check
-df_all_income %>%
-  filter(is.na(income)) %>%
-  pull(country.x) %>%
-  unique()
-
-# what is in df_all
-df_all %>%
-  filter(str_detect(country, "Venezuela")) %>%
-  select(country, country_clean)
-
-# what is in World Bank
-income_df %>%
-  filter(str_detect(country, "Venezuela")) %>%
-  select(country, country_clean)
-
-# byte-by-byte comparison
-charToRaw(df_all$country_clean[grepl("Venezuela", df_all$country)])
-charToRaw(income_df$country_clean[grepl("Venezuela", income_df$country)])
-
-df_all_income
-```
-
 - Identify common variables between datasets. Can they be used for merging? Why or why not?
 
 The datasets all have country names in common, but the problem is that these names aren't always written the same way. For example, one file might say "Venezuela" while another says "Venezuela, RB", or "Korea, South" vs "Korea, Rep." Because of these differences in spelling and formatting, we can’t reliably merge the datasets just using country names unless we clean them up first
@@ -193,70 +132,62 @@ The datasets all have country names in common, but the problem is that these nam
 - Since ISO codes are standardized, download and use the [CIA country data codes](https://www.cia.gov/the-world-factbook/references/country-data-codes/) for merging. Make sure you are not losing any of the countries in your original data set when merging.
 
 ```{r}
-library(readxl)
-library(readr)
-library(stringi)
-library(dplyr)
+# patch country names before standardization
+df_all <- df_all %>%
+  mutate(
+    country = case_when(
+      country == "Saint Martin" ~ "St. Martin (French part)",
+      country == "Virgin Islands" ~ "British Virgin Islands",
+      TRUE ~ country
+    )
+  )
 
-# load World Bank income classification
+# use countrycode to standardize names and get ISO-3 codes
+df_all_iso <- df_all %>%
+  mutate(
+    country_standard = countrycode(country, origin = "country.name", destination = "country.name"),
+    iso3c = countrycode(country, origin = "country.name", destination = "iso3c")
+  ) %>%
+  mutate(
+    iso3c = case_when(
+      country == "Kosovo" ~ "XKX",
+      country == "Venezuela" ~ "VEN",
+      country == "St. Martin (French part)" ~ "MAF",
+      country == "British Virgin Islands" ~ "VGB",
+      TRUE ~ iso3c
+    )
+  )
+
+# load income classification (World Bank)
 income_df <- read_excel("data/CLASS.xlsx", sheet = 1) %>%
   select(country = Economy,
          iso_code = Code,
-         income = `Income group`)
+         income = `Income group`) %>%
+  mutate(iso_code = str_trim(iso_code))
 
-# define robust cleaning function
-clean_country <- function(x) {
-  x %>%
-    str_trim() %>%
-    str_squish() %>%
-    stri_trans_general("Latin-ASCII")  # removes accents/unicode
-}
+# join income classification using ISO-3 codes
+df_all_income <- df_all_iso %>%
+  left_join(income_df, by = c("iso3c" = "iso_code"))
 
-# clean and standardize df_all
-df_all <- df_all %>%
-  mutate(country = str_trim(country)) %>%
+# mark unmatched income classifications
+df_all_income <- df_all_income %>%
+  mutate(income = ifelse(is.na(income), "Not classified", income))
 
-  # rename to match both World Bank and CIA naming
-  mutate(country = case_when(
-    country == "Venezuela" ~ "Venezuela, RB",       # for World Bank
-    country == "Venezuela, RB" ~ "Venezuela",       # for CIA ISO
-    country == "Turkey" ~ "Türkiye",                # for CIA ISO
-    country == "Macedonia" ~ "North Macedonia",     # for CIA ISO
-    TRUE ~ country
-  )) %>%
+df_all_income
 
-  # clean for matching
-  mutate(country_clean = clean_country(country)) %>%
+df_all_income_clean <- df_all_income %>%
+  select(
+    country = country_standard,     # clean country name
+    iso = iso3c,                    # standard ISO code
+    income,                         # World Bank income classification
+    expenditure,
+    youth_unemployment,
+    net_migration
+  )
 
-  # remove accidental duplicates
-  distinct(country_clean, .keep_all = TRUE)
-
-# clean income_df
-income_df <- income_df %>%
-  mutate(country = str_trim(country)) %>%
-  mutate(country_clean = clean_country(country))
-
-# merge income group
-df_all_income <- left_join(df_all, income_df, by = "country_clean")
-
-# load CIA ISO codes
-cia_codes <- read_csv("data/Country Data Codes.csv") %>%
-  select(country = Name, iso_code = `ISO 3166`) %>%
-  mutate(country = clean_country(country))
-
-# merge ISO codes using cleaned country names
-df_all_iso <- df_all_income %>%
-  mutate(country_join = clean_country(country.x)) %>%
-  left_join(cia_codes, by = c("country_join" = "country")) %>%
-  rename(iso_code = iso_code.y)
-
-# check unmatched ISO codes — should return character(0)
-df_all_iso %>%
-  filter(is.na(iso_code)) %>%
-  pull(country.x) %>%
-  unique()
+df_all_income_clean
+glimpse(df_all_income_clean)
 ```
-
 
 ## d.  Adding Geographical Information
 
@@ -265,6 +196,39 @@ Introduce continent and subcontinent (or region) data for each country.
 - Find and download an appropriate online resource.
 - Merge this information into the dataset, naming the final dataset `df_vars`. Make sure you are not losing any of the countries in your original data set when merging.
 
+```{r}
+# load continent mapping
+continent_data <- read.csv("data/countryContinent.csv")
+names(continent_data)
+
+# load continent info and rename relevant columns
+continent_data <- read.csv("data/countryContinent.csv") %>%
+  select(
+    iso = code_3,
+    continent,
+    region = sub_region
+  ) %>%
+  mutate(iso = str_trim(iso))
+
+# merge with cleaned dataset using ISO-3
+df_vars <- df_all_income_clean %>%
+  left_join(continent_data, by = "iso")
+
+df_vars
+
+# look for unmatched
+df_vars %>%
+  filter(is.na(continent)) %>%
+  select(country, iso) %>%
+  distinct()
+
+# patch Kosovo region and continent
+df_vars <- df_vars %>%
+  mutate(
+    continent = ifelse(iso == "XKX", "Europe", continent),
+    region = ifelse(iso == "XKX", "Southern Europe", region)
+  )
+```
 
 
 ## e. Data Tidiness and Summary Statistics
@@ -273,15 +237,79 @@ Introduce continent and subcontinent (or region) data for each country.
 (observational units, variables, fixed vs. measured variables).
 Make adjustments to tidy the data, if necessary.
 
+```{r}
+glimpse(df_vars)
+```
+
+Each row in the dataset stands for one country, and every column contains a specific variable like expenditure, unemployment, migration, or income. The data already looks clean and organized, so we don’t need to reshape or tidy it further.
+
 - Create a frequency table for the income status variable and briefly interpret the results.
+
+```{r}
+# absolute frequency
+table(df_vars$income)
+
+# relative frequency
+prop.table(table(df_vars$income))
+```
+The dataset has 84 high income countries, 54 upper middle income, 52 lower middle income, 26 low income, and 10 countries that are not classified.
+High income countries make up about 37% of the data, followed by upper middle (24%), lower middle (23%), and low income (11%). Only around 4% of countries are not classified.
+This shows the data is somewhat balanced, but there's a clear tilt toward middle and high income countries.
 
 - Analyze the distribution of income status across continents by computing absolute and relative frequencies. Comment on the findings.
 
+```{r}
+# absolute counts
+table(df_vars$continent, df_vars$income)
+
+# relative frequencies (row-wise proportions)
+prop.table(table(df_vars$continent, df_vars$income), margin = 1)
+```
+In **Africa** (55 countries), 22 are low income (40%) and 23 are lower middle income (42%). This means over 80% of African countries fall into the lower income brackets. Only 1 country is high income (2%). This reflects ongoing economic development challenges across much of the continent.
+
+In the **Americas** (49 countries), 21 are high income (43%) and 19 are upper middle income (39%). 4 are lower middle income (8%) and 5 are not classified (10%). The region is clearly skewed toward wealthier countries, but a few countries still fall into the middle and unclassified groups. This mix reflects strong economies like the US and Canada, alongside developing nations in Central and South America.
+
+**Asia** (52 countries) is the most economically diverse. It has 15 high income (29%), 14 upper middle (27%), 19 lower middle (37%), and 4 low income countries (8%). The range covers some of the world’s richest countries (like Japan and South Korea) and some of the poorest (like Afghanistan and Yemen), showing Asia’s economic contrasts.
+
+**Europe** (49 countries) is heavily dominated by high income countries — 38 of them (78%). The rest are mostly upper middle income (18%), with just 2 not classified. There are no low or lower middle income countries. This confirms Europe’s position as one of the wealthiest regions in the world.
+
+**Oceania** (21 countries) has 9 high income (43%) and 6 lower middle income (29%), with 4 upper middle (19%) and 2 unclassified (10%). The split here shows the contrast between rich countries like Australia and New Zealand, and smaller island nations with lower economic status.
+
+The data reflects global economic inequalities. Wealth is concentrated in Europe and parts of Oceania, while Africa remains largely low income. Asia and the Americas are more balanced, containing both very rich and developing countries. These patterns align with global development trends and regional histories.
+
 - Using the distribution of income status across continents, identify which countries are the only ones in their income group across the continent. Discuss briefly.
 
+```{r}
+# find unique income group within each continent
+df_vars %>%
+  filter(income != "Not classified") %>%
+  group_by(continent, income) %>%
+  filter(n() == 1) %>%
+  select(country, continent, income) %>%
+  arrange(continent, income)
+```
 
+```{r}
+# find rare income groups within each continent
+df_vars %>%
+  filter(income != "Not classified") %>%
+  group_by(continent, income) %>%
+  filter(n() <= 5) %>%
+  select(country, continent, income) %>%
+  arrange(continent, income)
+```
 
+These countries differ from the economic pattern of their continent for several reasons:
 
+- **Seychelles** has a small population and benefits from high-end tourism and stable governance, which helps it achieve high income despite being in Africa where most countries are lower income.
+
+- In the **Americas**, countries like *Bolivia*, *Honduras*, *Nicaragua*, and *Haiti* have weaker infrastructure, lower education levels, and histories of political instability or colonial exploitation. These factors contribute to them lagging behind wealthier neighbors.
+
+- **Asia’s** low income countries — *Afghanistan*, *Syria*, *Yemen*, and *North Korea* — are heavily affected by war, sanctions, or authoritarian regimes. These issues limit foreign investment, trade, and development.
+
+- **Fiji**, although a small island nation, has a relatively strong economy for the Pacific thanks to tourism, remittances, and regional political influence. It stands apart from nearby countries that rely more heavily on subsistence agriculture or aid.
+
+In general, these cases show how **politics, geography, conflict, and resource access** all play major roles in shaping a country’s economic status — not just its location on the map.
 
 ## f. Further Summary Statistics and Insights
 
