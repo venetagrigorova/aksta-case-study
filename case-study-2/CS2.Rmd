@@ -38,14 +38,13 @@ Load the following datasets from TUWEL and ensure that missing values are handle
   
   * `rawdata_347.txt`  which contains (estimated) net migration rate per country.
   
-```{r}
+```{r, echo=FALSE, message=FALSE}
 library(dplyr)
 library(tidyr)
 library(readr)
 library(stringr)
 library(countrycode)
 library(readxl)
-library(readr)
 library(stringi)
 ```
 
@@ -131,7 +130,7 @@ The datasets all have country names in common, but the problem is that these nam
 
 - Since ISO codes are standardized, download and use the [CIA country data codes](https://www.cia.gov/the-world-factbook/references/country-data-codes/) for merging. Make sure you are not losing any of the countries in your original data set when merging.
 
-```{r}
+```{r, warning=FALSE}
 # patch country names before standardization
 df_all <- df_all %>%
   mutate(
@@ -241,7 +240,15 @@ Make adjustments to tidy the data, if necessary.
 glimpse(df_vars)
 ```
 
-Each row in the dataset stands for one country, and every column contains a specific variable like expenditure, unemployment, migration, or income. The data already looks clean and organized, so we don’t need to reshape or tidy it further.
+Each row in `df_vars` represents one country, and each column is a different variable like education expenditure, youth unemployment, net migration, or income classification. So the dataset follows the tidy data rules: one row per observational unit and one column per variable.
+
+But there are some special cases to watch out for:
+
+- Some values are missing (e.g., `NA` in youth unemployment or income group). The data is still tidy, but we’d need to deal with those if we’re doing summaries or modeling.
+- A few country names didn’t match standard codes automatically (like “Kosovo”), so we manually fixed them using `case_when()`. This was needed to avoid issues with the `countrycode()` function.
+- Standardizing country names and adding ISO3 codes wasn’t strictly needed for tidiness, but it helps if we want to merge with other datasets later.
+
+So overall, the dataset is already tidy, but we had to take care of some edge cases to keep it consistent and ready for analysis.
 
 - Create a frequency table for the income status variable and briefly interpret the results.
 
@@ -309,7 +316,7 @@ These countries differ from the economic pattern of their continent for several 
 
 - **Fiji**, although a small island nation, has a relatively strong economy for the Pacific thanks to tourism, remittances, and regional political influence. It stands apart from nearby countries that rely more heavily on subsistence agriculture or aid.
 
-In general, these cases show how **politics, geography, conflict, and resource access** all play major roles in shaping a country’s economic status — not just its location on the map.
+In general, these cases show how politics, geography, conflict, and resource access all play major roles in shaping a country’s economic status.
 
 ## f. Further Summary Statistics and Insights
 
@@ -347,19 +354,19 @@ income_status_df
 ```
 
 ```{r}
-# Define the metrics and groups
+# define the metrics and groups
 metrics <- c("expenditure", "youth_unemployment", "net_migration")
 income_levels <- unique(income_status_df$income)
 
-# Initialize a list to store summary rows
+# initialize a list to store summary rows
 summary_list <- list()
 
-# Loop through each income level
+# loop through each income level
 for (inc in income_levels) {
   group_data <- subset(income_status_df, income_status_df$income == inc)
   summary_row <- list(income = inc)
 
-  # Compute average and median for each metric
+  # compute average and median for each metric
   for (metric in metrics) {
     avg_val <- mean(group_data[[metric]], na.rm = TRUE)
     med_val <- median(group_data[[metric]], na.rm = TRUE)
@@ -368,15 +375,13 @@ for (inc in income_levels) {
     summary_row[[paste0("median_", metric)]] <- med_val
   }
 
-  # Append the row to the list
+  # append the row to the list
   summary_list[[inc]] <- as.data.frame(summary_row)
 }
 
-# Combine all summaries into a single data frame
+# combine all summaries into a single data frame
 income_summary_df <- do.call(rbind, summary_list)
-rownames(income_summary_df) <- NULL  # Clean row names
-
-# View the result
+rownames(income_summary_df) <- NULL  # clean row names
 print(income_summary_df)
 ```
 High income countries have the highest average and median expenditure, as expected.
@@ -388,7 +393,7 @@ Low income countries have the lowest expenditure and relatively high youth unemp
 - Look at the standard deviation and the interquartile range of the variables per income status instead of the location statistics above. Do you gain additional insights? Briefly comment the results.
 
 ```{r}
-# Define metrics and income levels
+# define metrics and income levels
 income_groups <- list(
   "Low income" = subset(income_status_df, income == "Low income"),
   "Lower middle income" = subset(income_status_df, income == "Lower middle income"),
@@ -397,10 +402,9 @@ income_groups <- list(
   "Not classified" = subset(income_status_df, income == "Not classified")
 )
 
-# Store results
 variability_summary <- data.frame()
 
-# Loop through each group and compute SD and IQR
+# loop through each group and compute SD and IQR
 for (name in names(income_groups)) {
   group <- income_groups[[name]]
   row <- list(income = name)
@@ -416,9 +420,7 @@ for (name in names(income_groups)) {
   variability_summary <- rbind(variability_summary, as.data.frame(row))
 }
 
-# View the results
 print(variability_summary)
-
 ```
 High-income countries often show lower standard deviations and IQRs, indicating more consistent expenditure and youth unemployment rates across countries in that group. In contrast to that, upper-middle and lower-middle income countries show greater variability, which means they are less stable.
 
@@ -427,30 +429,30 @@ High-income countries often show lower standard deviations and IQRs, indicating 
 Discuss the results as well as the readability of the different tables.
  
 ```{r}
-# Initialize an empty data frame to store the results
+# initialize an empty data frame to store the results
 extended_variability_summary <- data.frame()
 
-# Loop through each combination of income status and continent
+# loop through each combination of income status and continent
 for (income_name in unique(income_status_df$income)) {
   for (continent_name in unique(income_status_df$continent)) {
-    # Subset the data for the current income and continent
+    # subset the data for the current income and continent
     group <- subset(income_status_df, income == income_name & continent == continent_name)
     
-    # Initialize the row with the income and continent
+    # initialize the row with the income and continent
     row <- list(income = income_name, continent = continent_name)
     
-    # Loop through the metrics (assuming 'metrics' is already defined as the columns you want to compute stats for)
+    # loop through the metrics (assuming 'metrics' is already defined as the columns you want to compute stats for)
     for (metric in metrics) {
       # Calculate the median and IQR for the current metric
       median_val <- median(group[[metric]], na.rm = TRUE)
       iqr_val <- IQR(group[[metric]], na.rm = TRUE)
       
-      # Add the computed values to the row
+      # add the computed values to the row
       row[[paste0("median_", metric)]] <- median_val
       row[[paste0("iqr_", metric)]] <- iqr_val
     }
     
-    # Append the row to the summary data frame
+    # append the row to the summary data frame
     extended_variability_summary <- rbind(extended_variability_summary, as.data.frame(row))
   }
 }
@@ -499,11 +501,11 @@ I prefer the wide format. It's less rows and reading. Maybe, if somebody wanted 
 - Identify countries performing well in terms of both **youth unemployment** and **net migration rate** (top 25% in net migration and bottom 25% in youth unemployment within their continent).
 
 ```{r}
-# Filter to include only rows where both metrics exist
+# filter to include only rows where both metrics exist
 filtered_df <- income_status_df %>%
   filter(!is.na(youth_unemployment), !is.na(net_migration))
 
-# Compute thresholds for each continent
+# compute thresholds for each continent
 quantile_df <- filtered_df %>%
   group_by(continent) %>%
   mutate(
@@ -511,7 +513,7 @@ quantile_df <- filtered_df %>%
     youth_unemp_25 = quantile(youth_unemployment, 0.25, na.rm = TRUE)
   )
 
-# Select countries above 75th percentile for net migration and below 25th percentile for youth unemployment
+# select countries above 75th percentile for net migration and below 25th percentile for youth unemployment
 top_performers <- quantile_df %>%
   filter(
     net_migration >= net_migration_75,
@@ -519,7 +521,6 @@ top_performers <- quantile_df %>%
   ) %>%
   select(country, continent, youth_unemployment, net_migration)
 
-# View the result
 print(top_performers)
 ```
 
@@ -563,19 +564,17 @@ posterior_prob
 - Given a country has high youth unemployment (above %25), what is the probability that it also has negative net migration?
 
 ```{r}
-# Countries with high youth unemployment
+# countries with high youth unemployment
 high_unemp <- df_vars[df_vars$youth_unemployment > 25, ]
 
-# Number of such countries
+# number of such countries
 n_high_unemp <- nrow(high_unemp)
 
-# Among those, how many have negative net migration
+# among those, how many have negative net migration
 n_negative_migration_given_high_unemp <- nrow(high_unemp[high_unemp$net_migration < 0, ])
 
-# Conditional probability
+# conditional probability
 prob_negative_migration_given_high_unemp <- ((n_negative_migration_given_high_unemp * (nrow(high_unemp)/length(df_vars$country))) / n_high_unemp)
-
-# Output
 prob_negative_migration_given_high_unemp
 ```
 
@@ -601,7 +600,7 @@ The Simpson's paradox usually happens due to different sample sizes across conti
 Export the final tidy dataset from e. as a **CSV** with:`;` as a separator; `.` representing missing values; no row names included.  Upload the `.csv` to TUWEL, together with the submission.
 
 ```{r}
-# Export to CSV without row names
+# export to CSV without row names
 write.table(df_vars, 
             file='data/final_df.csv', 
             row.names=FALSE, 
