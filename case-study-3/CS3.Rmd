@@ -263,6 +263,37 @@ the x-axis.
   * Comment on the plot. E.g., what are the regions with the most influx? 
   What are the regions with the most outflux?
 
+```{r}
+#median net migration per subcontinent
+median_net_migration <- clean_df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_net_migr = median(net_migr_rate, na.rm = TRUE)) %>%
+  ungroup()
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot(median_net_migration, aes(
+  x = median_net_migr,
+  y = fct_reorder(subcontinent, median_net_migr),
+  color = continent
+)) +
+  geom_point(size = 3) +
+  scale_color_manual(values = cbPalette) +
+  labs(
+    x = "Median Net Migration Rate (per 1000 people)",
+    y = "Subcontinent",
+    title = "Median Net Migration Rate by Subcontinent",
+    color = "Continent"
+  )+
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 14)
+  )
+```
+Oceania presents a strong contrast, with Australia and New Zealand being major destinations for migrants, while Micronesia and Polynesia experience significant emigration.Europe generally shows positive net migration in its Western and Northern parts, while some other regions have near-zero rates.Africa generally seems to have net outmigration in the displayed subcontinents like Sub-Saharan Africa and Northern Africa.Asia shows a mix, with Eastern Asia and Southern Europe having positive rates, while Central Asia experiences outflux.
+
 
 ## g. Median youth unemployment rate per subcontinent
 
@@ -289,8 +320,37 @@ the x-axis.
   * Comment on the plot. E.g., what are the regions with the highest vs lowest youth
   unemployment rate?
   
+```{r}
+# median youth unemployment per subcontinent
+median_unemployment <- clean_df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_youth_unemp = median(youth_unempl_rate, na.rm = TRUE)) %>%
+  ungroup()
 
 
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(median_unemployment, aes(
+  x = median_youth_unemp,
+  y = fct_reorder(subcontinent, median_youth_unemp),
+  fill = continent
+)) +
+  geom_bar(stat = "identity", alpha = 0.7) +         
+  scale_fill_manual(values = cbPalette) +            
+  labs(
+    x = "Median Youth Unemployment Rate (%)",
+    y = "Subcontinent",
+    title = "Median Youth Unemployment Rate by Subcontinent",
+    fill = "Continent"
+  ) +
+  theme_bw() +                                         
+  theme(
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 14)
+  )
+```
+Regions like Polynesia and Northern Africa show the highest median youth unemployment rates, while Eastern Asia and Northern America and Europe show the lowest. 
 
 ## h. Median youth unemployment rate per subcontinent -- with error bars
 
@@ -303,7 +363,42 @@ the variable in each of the subcontinents.
 Repeat the plot from Task g. but include also error bars which reflect the 25% and 75%
 quantiles. You can use `geom_errorbar` in **ggplot2**.
 
+```{r}
+# median youth unemployment per subcontinent with error rates
+median_unemployment_errors <- clean_df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(
+    median_youth_unemp = median(youth_unempl_rate, na.rm = TRUE),
+    q25 = quantile(youth_unempl_rate, 0.25, na.rm = TRUE),
+    q75 = quantile(youth_unempl_rate, 0.75, na.rm = TRUE)
+  ) %>%
+  ungroup()
 
+
+
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(median_unemployment_errors, aes(
+  x = median_youth_unemp,
+  y = fct_reorder(subcontinent, median_youth_unemp),
+  fill = continent
+)) +
+  geom_bar(stat = "identity", alpha = 0.7) +
+  geom_errorbar(aes(xmin = q25, xmax = q75), width = 0.3, color = "black") +
+  scale_fill_manual(values = cbPalette) +
+  labs(
+    x = "Median Youth Unemployment Rate (%)",
+    y = "Subcontinent",
+    title = "Median Youth Unemployment Rate by Subcontinent\n(with 25% and 75% Quantiles)",
+    fill = "Continent"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 14)
+  )
+```
 
 ## i. Relationship between education expenditure and net migration rate
 
@@ -317,12 +412,69 @@ net migration rate.
 Comment on the plot. Do you see any relationship between the two variables? Do you see
 any difference among the income levels?
 
+```{r}
+# relationship between education expenditure and net migration rate
+ggplot(clean_df, aes(
+  x = expenditure,
+  y = net_migr_rate,
+  color = status
+)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    aes(group = status, color = status)
+  ) +
+  labs(
+    x = "Education Expenditure (% of GDP)",
+    y = "Net Migration Rate (per 1000 people)",
+    title = "Relationship Between Education Expenditure and Net Migration Rate",
+    color = "Income Status"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(size = 11),
+    legend.text = element_text(size = 9)
+  )
+```
+There is no single strong positive or negative trend across all data.High-income (H) countries generally show a slight negative relationship (more expenditure, slightly lower net migration), while Low-income (L) countries show a  slightly positive relationship.
+
 ## j. Relationship between youth unemployment and net migration rate
 
 Create a plot as in Task i. but for youth unemployment and net migration rate. Comment briefly.
 
-
-
+```{r}
+# relationship between youth unemployment and net migration rate
+ggplot(clean_df, aes(
+  x = youth_unempl_rate,
+  y = net_migr_rate,
+  color = status
+)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    aes(group = status, color = status)
+  ) +
+  labs(
+    x = "Youth Unemployment Rate (%)",
+    y = "Net Migration Rate (per 1000 people)",
+    title = "Relationship Between Youth Unemployment Rate and Net Migration Rate",
+    color = "Income Status"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(size = 11),
+    legend.text = element_text(size = 9)
+  )
+```
+High-income (H) countries tend to show a slight negative trend, while low-income (L) countries show a slight positive trend.Lower Middle Income (LM) status stands out as the most negative, indicating that for these countries, higher youth unemployment rates are associated with a more pronounced decrease in net migration.
 
 ## k. Merging population data
 
