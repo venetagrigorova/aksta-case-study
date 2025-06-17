@@ -5,16 +5,21 @@ author:
   - Carla Salazar
   - Veneta Grigorova
   - Juraj Simkovic
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
+always_allow_html: true
 ---
 
-```{r}
-if (!requireNamespace("rnaturalearth", quietly = TRUE)) install.packages("rnaturalearth")
-if (!requireNamespace("rnaturalearthdata", quietly = TRUE)) install.packages("rnaturalearthdata")
-if (!requireNamespace("sf", quietly = TRUE)) install.packages("sf")
-if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
-if (!requireNamespace("plotly", quietly = TRUE)) install.packages("plotly")
-if (!requireNamespace("GGally", quietly = TRUE)) install.packages("GGally")
+```{r, echo=FALSE, include=FALSE}
+suppressMessages(suppressWarnings({
+  if (!requireNamespace("rnaturalearth", quietly = TRUE)) install.packages("rnaturalearth")
+  if (!requireNamespace("rnaturalearthdata", quietly = TRUE)) install.packages("rnaturalearthdata")
+  if (!requireNamespace("sf", quietly = TRUE)) install.packages("sf")
+  if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+  if (!requireNamespace("plotly", quietly = TRUE)) install.packages("plotly")
+  if (!requireNamespace("GGally", quietly = TRUE)) install.packages("GGally")
+}))
 ```
 
 
@@ -55,7 +60,7 @@ Additional information on continent, subcontinent/region and income status was a
 to the dataset in Case Study 2.
 
 ```{r}
-df <- read_csv("file_out2.csv", show_col_types = FALSE)
+df <- suppressMessages(read_csv("file_out2.csv", show_col_types = FALSE))
 
 # clean the dataset
 clean_df <- df %>%
@@ -194,9 +199,19 @@ ggplot(clean_df, aes(x = continent, y = net_migr_rate)) +
   ) +
   theme_minimal()
 ```
+```{r}
+# find outliers in Asia
+asia_outliers <- df %>%
+  filter(continent == "Asia") %>%
+  filter(net_migr_rate == min(net_migr_rate) | net_migr_rate == max(net_migr_rate)) %>%
+  select(country, net_migr_rate)
+
+print(asia_outliers)
+```
+
 The boxplot shows how net migration rate differs across continents. Europe and Oceania have the highest median migration rates, meaning more countries in those regions have net immigration. Africa and the Americas mostly have lower or negative values. Asia is interesting because it has both large positive and large negative outliers, meaning there's a big variation between countries.
 
-For Asia, the country with the most negative net migration is likely one with lots of people leaving, and the one with the highest positive has lots of immigration.
+In Asia, Lebanon has the largest negative net migration rate (−88.7), indicating massive outmigration, likely due to political or economic instability. Syria has the largest positive rate (27.1), possibly due to post-war return migration or data anomalies. These outliers show the high variability in migration patterns across Asia.
 
 ## e. Net migration in different subcontinents
 
@@ -292,8 +307,12 @@ ggplot(median_net_migration, aes(
     plot.title = element_text(face = "bold", size = 14)
   )
 ```
-Oceania presents a strong contrast, with Australia and New Zealand being major destinations for migrants, while Micronesia and Polynesia experience significant emigration.Europe generally shows positive net migration in its Western and Northern parts, while some other regions have near-zero rates.Africa generally seems to have net outmigration in the displayed subcontinents like Sub-Saharan Africa and Northern Africa.Asia shows a mix, with Eastern Asia and Southern Europe having positive rates, while Central Asia experiences outflux.
+Australia and New Zealand, Western Europe, Northern America, and Northern Europe have the highest positive median values, which means they are regions with the most influx of people.
 
+On the other hand, Micronesia, Polynesia, Central Asia, Melanesia, and Northern Africa have the most outflux, with negative medians—indicating more people are leaving than arriving.
+
+This highlights clear differences in migration trends between regions:
+wealthier and more stable areas tend to attract more people, while others are losing population through emigration.
 
 ## g. Median youth unemployment rate per subcontinent
 
@@ -350,7 +369,7 @@ ggplot(median_unemployment, aes(
     plot.title = element_text(face = "bold", size = 14)
   )
 ```
-Regions like Polynesia and Northern Africa show the highest median youth unemployment rates, while Eastern Asia and Northern America and Europe show the lowest. 
+Regions like northern africa and polynesia show the highest median youth unemployment rates (above 30%). On the other end, melanesia, eastern asia, and central asia have the lowest median youth unemployment rates (all under 10%).
 
 ## h. Median youth unemployment rate per subcontinent -- with error bars
 
@@ -399,6 +418,9 @@ ggplot(median_unemployment_errors, aes(
     plot.title = element_text(face = "bold", size = 14)
   )
 ```
+Some subcontinents like northern africa, western asia, and sub-saharan africa have wide error bars, meaning there’s a lot of variation between countries. others like northern europe, eastern europe, and melanesia are more consistent.
+
+Even though northern africa and polynesia have the highest medians, the error bars show that some countries in those regions might be doing better or worse than the average. overall, this plot helps to see where youth unemployment is both high and uneven.
 
 ## i. Relationship between education expenditure and net migration rate
 
@@ -440,7 +462,13 @@ ggplot(clean_df, aes(
     legend.text = element_text(size = 9)
   )
 ```
-There is no single strong positive or negative trend across all data.High-income (H) countries generally show a slight negative relationship (more expenditure, slightly lower net migration), while Low-income (L) countries show a  slightly positive relationship.
+The plot shows the relationship between education expenditure and net migration rate, separated by income status. Overall, the trends are pretty weak.
+
+For high-income countries (red), there’s a slight negative trend. More spending is linked with a small drop in net migration. low-income countries (purple) show almost no trend at all.
+
+The most visible slope is for lower-middle-income countries (blue), where higher education spending is linked with a strong decrease in net migration.
+
+This suggests that in some income groups, education spending might influence migration patterns, but it’s not a consistent effect across all groups.
 
 ## j. Relationship between youth unemployment and net migration rate
 
@@ -474,7 +502,13 @@ ggplot(clean_df, aes(
     legend.text = element_text(size = 9)
   )
 ```
-High-income (H) countries tend to show a slight negative trend, while low-income (L) countries show a slight positive trend.Lower Middle Income (LM) status stands out as the most negative, indicating that for these countries, higher youth unemployment rates are associated with a more pronounced decrease in net migration.
+Most income groups show a slight negative trend. As youth unemployment increases, net migration tends to drop.
+
+This trend is most noticeable for lower-middle-income (LM) countries (blue), where higher youth unemployment is linked to more people leaving the country.
+
+For high-income (H) and upper-middle-income (UM) countries, the relationship is weaker but still slightly negative. low-income (L) countries (purple) show almost no change.
+
+In general, higher youth unemployment is associated with more outmigration, especially in LM countries.
 
 ## k. Merging population data
 
@@ -488,24 +522,23 @@ this case study using a left join.
 * Inspect the data and check whether the join worked well.
 
 ```{r}
-clean_df
+head(clean_df)
 ```
 ```{r}
-# Read CSV skipping initial irrelevant rows (like metadata)
+# read CSV skipping initial irrelevant rows (like metadata)
 df_raw <- read_csv("pop.csv", skip = 5, col_names = c("ISO3", "Rank", "NA1", "Country", "Population_2022_thousands", "NA2"), show_col_types = FALSE)
 
-# Drop columns with useless info (NA1, NA2) and any rows with NA in important columns
+# drop columns with useless info (NA1, NA2) and any rows with NA in important columns
 df_clean_2020 <- df_raw %>%
   select(ISO3, Rank, Country, Population_2022_thousands) %>%
   filter(!is.na(ISO3), !is.na(Country), !is.na(Population_2022_thousands)) %>%
   mutate(Rank = as.integer(Rank))  # convert Rank to integer
 
-# View cleaned data
-print(df_clean_2020)
+head(df_clean_2020)
 ```
 
 ```{r}
-clean_df
+head(clean_df)
 ```
 
 
@@ -519,7 +552,7 @@ df_merged <- left_join(
   keep = NULL
 )
 
-df_merged
+head(df_merged)
 ```
 This join makes sense, because the larger dataframe df_clean_2020 contains more countries than the original clean_df dataframe. All of the rows in the clean_df have a match in the right dataframe, we therefore see no NAs in the new dataframe.
 
@@ -550,7 +583,7 @@ ggplot(df_europe, aes(x = expenditure, y = net_migr_rate, size = Population_2022
     y = "Net Migration Rate"
   )
 ```
-The resulting graph is kind of surprising. We would expect a qutie clear negative trend - as the education expenditure increases, net migration rate would decrease, if we assume that with higher education levels the quality of life in a country rises. The realtionship here is somewhat vague, even slightly contradicting what we would expect. The scale of the size of the points according to country's population does not help to interpret the graph by much. Must of the larger countries, India, China, etc. are located around the 5% education expenditure mark, with a net migration rate between 0 and 2,5%.
+The scatterplot shows that most European countries spend between 3% and 6% of GDP on education. Net migration rates vary, with most values between −5 and +10, but there’s no strong visible trend. Countries with higher education spending don’t clearly have higher or lower net migration. Population size (point size) also doesn’t reveal a clear pattern. arger countries are spread across the plot. Overall, the relationship between education spending and net migration in Europe appears weak or non-existent.
 
 ## m. Interactive plot
 
@@ -580,7 +613,7 @@ p <- ggplot(df_merged, aes(
     color = "Continent"
   )
 
-# Convert to interactive plotly plot with custom tooltips
+# convert to interactive plotly plot with custom tooltips
 ggplotly(p, tooltip = c("text", "x", "y", "size"))
 ```
 
@@ -612,7 +645,12 @@ ggparcoord(data = df_subset,
   labs(title = "Plot of Education Expenditure, Youth Unemployment Rate, and Net Migration Rate",
        color = "Income Status")
 ```
-The plot is kind of difficult to intrpret, as it is not clear where are the lines leading. We would conclude that with lower expenditure the youth unemployment rate is higher and the other way around as well. The final effect on the net migration rate varies a lot (hence the spread on the right side of the graph), which could mean there are other factors influencing this variable (e.g. war or poor political situation). We can also see that countries, which belong to the higher income status group have a higher migration rate. This makes total sense - this is the so called economic migration - there is an influx of people to countries with good economic opportunities is higher than the outflow of people. Hence the positive migration rate.
+
+This plot shows how countries differ in education expenditure, youth unemployment, and net migration, depending on their income status. the lines are colored by income group, and we can see that high-income (red) countries generally have higher education spending, lower youth unemployment, and mostly positive net migration.
+
+Lower-income countries (green and purple) tend to spend less on education and have more variation in youth unemployment and migration. their lines are more spread out, which shows that there's a lot of difference between countries in these groups.
+
+Overall, the plot helps show that higher-income countries have more stable indicators, while lower-income ones vary more.
 
 ## o. World map visualisation
 
@@ -637,3 +675,4 @@ ggplot(world_exp) +
     fill = "Education Expenditure (%)"
   )
 ```
+The map shows that education expenditure varies a lot between countries. Some African countries spend a low percentage of their gdp on education, while many European, North American, and Asian countries spend around 4–6%. The grey areas mean there's no data available.
