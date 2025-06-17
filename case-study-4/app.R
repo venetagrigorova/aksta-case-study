@@ -19,7 +19,7 @@ names(data)[names(data) == "electricity_fossil_fuel"] <- "electricity_fossil"
 names(data)[names(data) == "pop_growth_rate"] <- "growth"
 names(data)[names(data) == "life_expectancy"] <- "life"
 
-# rename columns for display
+# mapping from internal names to display labels
 nice_names <- c(
   "education" = "Education expenditure (% GDP)",
   "youth" = "Youth unemployment (%)",
@@ -28,6 +28,8 @@ nice_names <- c(
   "growth" = "Population growth (%)",
   "life" = "Life expectancy at birth"
 )
+
+reverse_names <- setNames(names(nice_names), nice_names)
 
 # match world map to ISO codes
 world_map <- map_data("world")
@@ -46,7 +48,7 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(
                  selectInput("var", "Select variable:",
-                             choices = nice_names),
+                             choices = setNames(names(nice_names), nice_names)),
                  actionButton("show", "View raw data"),
                  DTOutput("datatable")
                ),
@@ -66,8 +68,8 @@ ui <- fluidPage(
     tabPanel("Multivariate analysis",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("xvar", "X-axis variable:", choices = names(nice_names)),
-                 selectInput("yvar", "Y-axis variable:", choices = names(nice_names)),
+                 selectInput("xvar", "X-axis variable:", choices = nice_names),
+                 selectInput("yvar", "Y-axis variable:", choices = nice_names),
                  selectInput("sizevar", "Point size by:", choices = c("population", "area"))
                ),
                mainPanel(plotlyOutput("scatter"))
@@ -80,8 +82,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   selected_data <- reactive({
     req(input$var)
-    col <- names(nice_names)[nice_names == input$var]
-    data %>% select(country, continent, value = all_of(col)) %>% 
+    data %>% select(country, continent, value = all_of(input$var)) %>% 
       filter(!is.na(value))
   })
   
@@ -93,54 +94,49 @@ server <- function(input, output, session) {
   })
   
   output$map <- renderPlotly({
-    col <- names(nice_names)[nice_names == input$var]
     gg <- ggplot(data_map, aes(x = long, y = lat, group = group)) +
-      geom_polygon(aes_string(fill = col), color = "white") +
+      geom_polygon(aes_string(fill = input$var), color = "white") +
       scale_fill_viridis_c() +
       theme_void()
     ggplotly(gg)
   })
   
   output$boxplot <- renderPlotly({
-    col <- names(nice_names)[nice_names == input$var]
     ggplotly(
-      ggplot(data, aes_string(y = col)) +
+      ggplot(data, aes_string(y = input$var)) +
         geom_boxplot(fill = "skyblue") +
         theme_minimal()
     )
   })
   
   output$histogram <- renderPlotly({
-    col <- names(nice_names)[nice_names == input$var]
     ggplotly(
-      ggplot(data, aes_string(x = col)) +
+      ggplot(data, aes_string(x = input$var)) +
         geom_histogram(fill = "tomato", bins = 30, alpha = 0.7) +
-        geom_density(aes_string(x = col, y = "..count.."), color = "black") +
+        geom_density(aes_string(x = input$var, y = "..count.."), color = "black") +
         theme_minimal()
     )
   })
   
   output$continent_box <- renderPlotly({
-    col <- names(nice_names)[nice_names == input$var]
     ggplotly(
-      ggplot(data, aes_string(x = "continent", y = col)) +
+      ggplot(data, aes_string(x = "continent", y = input$var)) +
         geom_boxplot(aes(fill = continent)) +
         theme_minimal()
     )
   })
   
   output$continent_density <- renderPlotly({
-    col <- names(nice_names)[nice_names == input$var]
     ggplotly(
-      ggplot(data, aes_string(x = col, fill = "continent")) +
+      ggplot(data, aes_string(x = input$var, fill = "continent")) +
         geom_density(alpha = 0.5) +
         theme_minimal()
     )
   })
   
   output$scatter <- renderPlotly({
-    xcol <- input$xvar
-    ycol <- input$yvar
+    xcol <- reverse_names[input$xvar]
+    ycol <- reverse_names[input$yvar]
     ggplotly(
       ggplot(data, aes_string(x = xcol, y = ycol)) +
         geom_point(aes_string(color = "continent", size = input$sizevar)) +
