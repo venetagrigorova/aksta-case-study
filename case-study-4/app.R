@@ -1,3 +1,5 @@
+install.packages("DT")
+
 library(shiny)
 library(tidyverse)
 library(plotly)
@@ -12,21 +14,21 @@ data <- as_tibble(data)
 
 # clean and rename columns
 data <- data %>% rename_with(make.names)
-names(data)[names(data) == "expenditure"] <- "education"
-names(data)[names(data) == "youth_unempl_rate"] <- "youth"
+names(data)[names(data) == "expenditure"] <- "education_expenditure"
+names(data)[names(data) == "youth_unempl_rate"] <- "youth_unemployment"
 names(data)[names(data) == "net_migr_rate"] <- "net_migration"
 names(data)[names(data) == "electricity_fossil_fuel"] <- "electricity_fossil"
-names(data)[names(data) == "pop_growth_rate"] <- "growth"
-names(data)[names(data) == "life_expectancy"] <- "life"
+names(data)[names(data) == "pop_growth_rate"] <- "population_growth"
+names(data)[names(data) == "life_expectancy"] <- "life_expectancy"
 
 # mapping from internal names to display labels
 nice_names <- c(
-  "education" = "Education expenditure (% GDP)",
-  "youth" = "Youth unemployment (%)",
+  "education_expenditure" = "Education expenditure (% GDP)",
+  "youth_unemployment" = "Youth unemployment (%)",
   "net_migration" = "Net migration rate",
   "electricity_fossil" = "Electricity from fossil fuels (%)",
-  "growth" = "Population growth (%)",
-  "life" = "Life expectancy at birth"
+  "population_growth" = "Population growth (%)",
+  "life_expectancy" = "Life expectancy at birth"
 )
 
 reverse_names <- setNames(names(nice_names), nice_names)
@@ -56,8 +58,8 @@ ui <- fluidPage(
                  tabsetPanel(
                    tabPanel("Map", plotlyOutput("map")),
                    tabPanel("Global analysis",
-                            plotlyOutput("boxplot"),
-                            plotlyOutput("histogram")),
+                            plotlyOutput("histogram"),
+                            plotlyOutput("boxplot")),
                    tabPanel("Analysis per continent",
                             plotlyOutput("continent_box"),
                             plotlyOutput("continent_density"))
@@ -104,7 +106,7 @@ server <- function(input, output, session) {
   output$boxplot <- renderPlotly({
     ggplotly(
       ggplot(data, aes_string(y = input$var)) +
-        geom_boxplot(fill = "skyblue") +
+        geom_boxplot(fill = "white") +
         theme_minimal()
     )
   })
@@ -112,8 +114,9 @@ server <- function(input, output, session) {
   output$histogram <- renderPlotly({
     ggplotly(
       ggplot(data, aes_string(x = input$var)) +
-        geom_histogram(fill = "tomato", bins = 30, alpha = 0.7) +
-        geom_density(aes_string(x = input$var, y = "..count.."), color = "black") +
+        geom_histogram(aes(y = after_stat(density)), 
+                       fill = "grey", bins = 30, alpha = 0.5) +
+        geom_density(fill = "#6A5ACD", color = "black", alpha = 0.3, color = NA) +
         theme_minimal()
     )
   })
@@ -121,7 +124,7 @@ server <- function(input, output, session) {
   output$continent_box <- renderPlotly({
     ggplotly(
       ggplot(data, aes_string(x = "continent", y = input$var)) +
-        geom_boxplot(aes(fill = continent)) +
+        geom_boxplot(fill = "white") +
         theme_minimal()
     )
   })
